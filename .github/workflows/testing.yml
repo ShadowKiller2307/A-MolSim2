@@ -1,0 +1,29 @@
+name: testing
+
+on: [push,pull_request]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake
+        sudo apt install libxerces-c-dev
+        sudo apt-get install libboost-program-options-dev
+
+    - name: Building the project
+      run: |
+        mkdir build
+        cd build
+        cmake -DCMAKE_C_FLAGS="-fsanitize=address" -DCMAKE_CXX_FLAGS="-fsanitize=address" ..
+        make -j
+
+    - name: Building the tests and executing them
+      run: |
+        cd tests
+        ./tests
