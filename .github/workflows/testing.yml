@@ -25,5 +25,6 @@ jobs:
 
     - name: Building the tests and executing them
       run: |
+        cd build
         cd tests
         ./tests
