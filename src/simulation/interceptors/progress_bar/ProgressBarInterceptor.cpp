@@ -5,6 +5,7 @@
 
 #include <filesystem>
 #include <iostream>
+#include <unistd.h>
 
 #include "io/logger/Logger.h"
 #include "simulation/SimulationParams.h"
