@@ -22,6 +22,7 @@ void RadialDistributionFunctionInterceptor::onSimulationStart(Simulation& simula
 void RadialDistributionFunctionInterceptor::operator()(size_t iteration, Simulation& simulation) {
     std::map<size_t, size_t> samples_per_bin_index;
 
+
     for (auto it1 = simulation.particle_container->begin(); it1 != simulation.particle_container->end(); it1++) {
         auto& particle = *it1;
         for (auto it2 = it1 + 1; it2 != simulation.particle_container->end(); it2++) {

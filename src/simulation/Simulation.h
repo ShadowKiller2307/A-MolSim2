@@ -54,6 +54,8 @@ class Simulation {
      */
     std::unique_ptr<IntegrationFunctor> integration_functor;
 
+    std::vector<std::array<double,3>> initial_pos_of_particles;
+
     static void savePerformanceTest(const SimulationOverview& overview, const SimulationParams& params);
 
     /**
@@ -64,4 +66,5 @@ class Simulation {
     friend class ThermostatInterceptor;
     friend class ParticleUpdateCounterInterceptor;
     friend class RadialDistributionFunctionInterceptor;
+    friend class DiffusionInterceptor;
 };

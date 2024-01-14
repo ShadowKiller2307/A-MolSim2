@@ -7,6 +7,7 @@
 #include <iostream>
 #include <tuple>
 
+
 #include "integration/IntegrationMethods.h"
 #include "io/csv/CSVWriter.h"
 #include "io/logger/Logger.h"
@@ -37,6 +38,7 @@ Simulation::Simulation(const std::vector<Particle>& initial_particles, const Sim
     particle_container->reserve(initial_particles.size());
     for (auto& particle : initial_particles) {
         particle_container->addParticle(particle);
+        initial_pos_of_particles.push_back(particle.getX());
     }
 }
 
