@@ -171,6 +171,9 @@
     <xs:attribute name="application_interval" type="xs:integer" use="required" />
   </xs:complexType>
 
+  <xs:complexType name="DiffusionInterceptorType">
+  </xs:complexType>
+
 
   <xs:complexType name="SimulationInterceptorsType">
     <xs:all>
@@ -180,6 +183,7 @@
         type="RadialDistributionFunctionInterceptionType" minOccurs="0" />
       <xs:element name="FrameWriter" type="FrameWriterInterceptorType" minOccurs="0" />
       <xs:element name="Thermostat" type="ThermostatInterceptorType" minOccurs="0" />
+      <xs:element name="Diffusion" type="DiffusionInterceptorType" minOccurs="0"/>
     </xs:all>
   </xs:complexType>
 
