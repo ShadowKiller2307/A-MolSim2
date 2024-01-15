@@ -1,6 +1,7 @@
 #include "diffusion.h"
 #include "utils/ArrayUtils.h"
-DiffusionInterceptor::DiffusionInterceptor() {}
+#include "simulation/SimulationParams.h"
+DiffusionInterceptor::DiffusionInterceptor() = default;
 
 void DiffusionInterceptor::onSimulationStart(Simulation &simulation) {
 
@@ -20,9 +21,8 @@ void DiffusionInterceptor::operator()(size_t iteration, Simulation& simulation) 
 
     double sum = 0;
     size_t i = 0;
-    for (auto it = simulation.particle_container->begin(); it != simulation.particle_container->end(); it++) {
-        auto& particle = *it;
-        double norm = ArrayUtils::L2Norm(particle.getX()-previous_reference.at(i));
+    for (auto & particle : *simulation.particle_container) {
+        double norm = ArrayUtils::L2Norm(particle.getX()-previous_references.at(i));
         norm = std::pow(norm,1/2);
         previous_references.at(i) = particle.getX();
         sum+=norm;

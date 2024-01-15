@@ -1,7 +1,7 @@
 #include "SmoothedLJ.h"
 #include "utils/ArrayUtils.h"
 
-std::array<double, 3UL> calculateForce(Particle &p, Particle& q) const {
+std::array<double, 3UL> SmoothedLJ::calculateForce(Particle &p, Particle& q) const {
     // based on the distance between particles p and j a different formula
     // for the forces will be applied
     double cutoffRadius = 2.3; //TODO change later
@@ -35,6 +35,6 @@ std::array<double, 3UL> calculateForce(Particle &p, Particle& q) const {
     // be calculated for particles with a distance greater than the cutoff radius
 }
 
-explicit operator std::string() const {
+SmoothedLJ::operator std::string() const {
     return "Smoothed LJ";
 }
