@@ -23,7 +23,8 @@ public:
      */
     void operator()(size_t iteration, Simulation& simulation) override;
     void onSimulationEnd(size_t iteration, Simulation& simulation) override;
-
+    explicit operator std::string() const override;
+    void logSummary(int depth) const override;
 
 private:
     std::unique_ptr<CSVWriter> csv_writer;

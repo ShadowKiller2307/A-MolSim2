@@ -9,6 +9,7 @@
 #include "simulation/interceptors/progress_bar/ProgressBarInterceptor.h"
 #include "simulation/interceptors/radial_distribution_function/RadialDistributionFunctionInterceptor.h"
 #include "simulation/interceptors/thermostat/ThermostatInterceptor.h"
+#include "simulation/interceptors/diffusion/diffusion.h"
 
 CuboidSpawner XSDToInternalTypeAdapter::convertToCuboidSpawner(const CuboidSpawnerType &cuboid, bool third_dimension)
 {
@@ -141,6 +142,10 @@ std::vector<std::shared_ptr<SimulationInterceptor>> XSDToInternalTypeAdapter::co
         auto sample_every_x_percent = interceptors.RadialDistributionFunction()->sample_every_x_percent();
 
         simulation_interceptors.push_back(std::make_shared<RadialDistributionFunctionInterceptor>(bin_width, sample_every_x_percent));
+    }
+
+    if(interceptors.Diffusion()){
+        simulation_interceptors.push_back(std::make_shared<DiffusionInterceptor>());
     }
 
     if (interceptors.FrameWriter())

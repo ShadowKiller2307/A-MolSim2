@@ -36,3 +36,13 @@ void DiffusionInterceptor::operator()(size_t iteration, Simulation& simulation) 
 }
 
 void DiffusionInterceptor::onSimulationEnd(size_t iteration, Simulation &simulation) {}
+
+DiffusionInterceptor::operator std::string() const {
+    return "Diffusion";
+}
+
+void DiffusionInterceptor::logSummary(int depth) const {
+    std::string indent = std::string(depth * 2, ' ');
+
+    Logger::logger->info("{}╟┤{}Diffusion: {}", indent, ansi_orange_bold, ansi_end);
+}
