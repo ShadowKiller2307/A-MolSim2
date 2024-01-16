@@ -9,7 +9,7 @@
 #include "simulation/interceptors/progress_bar/ProgressBarInterceptor.h"
 #include "simulation/interceptors/radial_distribution_function/RadialDistributionFunctionInterceptor.h"
 #include "simulation/interceptors/thermostat/ThermostatInterceptor.h"
-#include "simulation/interceptors/diffusion/diffusion.h"
+#include "simulation/interceptors/diffusion/DiffusionInterceptor.h"
 
 CuboidSpawner XSDToInternalTypeAdapter::convertToCuboidSpawner(const CuboidSpawnerType &cuboid, bool third_dimension)
 {

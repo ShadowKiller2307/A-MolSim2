@@ -1,4 +1,4 @@
-#include "diffusion.h"
+#include "DiffusionInterceptor.h"
 #include "utils/ArrayUtils.h"
 #include "simulation/SimulationParams.h"
 DiffusionInterceptor::DiffusionInterceptor() = default;
