@@ -16,6 +16,8 @@
 LinkedCellsContainer::LinkedCellsContainer(const std::array<double, 3>& _domain_size, double _cutoff_radius,
                                            const std::array<BoundaryCondition, 6>& _boundary_types, int _n)
     : domain_size(_domain_size), cutoff_radius(_cutoff_radius), boundary_types(_boundary_types) {
+
+    // calculate the number of cells in each dimension
     domain_num_cells = {std::max(static_cast<int>(std::floor(_domain_size[0] / cutoff_radius)), 1),
                         std::max(static_cast<int>(std::floor(_domain_size[1] / cutoff_radius)), 1),
                         std::max(static_cast<int>(std::floor(_domain_size[2] / cutoff_radius)), 1)};

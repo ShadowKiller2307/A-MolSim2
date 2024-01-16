@@ -60,6 +60,15 @@ class Particle {
      */
     int type;
 
+    /**
+     * @brief Neighbors of the particle p
+     * 0 1 2
+     * 3 p 4
+     * 5 6 7
+     * stores nullptr if no neighbor is present in that direction
+     */
+    std::array<Particle*, 8> neighbors;
+
    public:
     Particle(const Particle& other);
 

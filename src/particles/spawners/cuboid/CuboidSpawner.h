@@ -11,8 +11,9 @@
  * It is possible to specify the lower left corner of the cuboid, the grid dimensions, the spacing between neighboring particles, the mass
  * of the particles, the initial velocity of the particles and the type of the particles.
  */
-class CuboidSpawner : public ParticleSpawner {
-   private:
+class CuboidSpawner : public ParticleSpawner
+{
+private:
     /**
      * @brief Defines the lower left corner where the cuboid will be spawned
      */
@@ -22,6 +23,11 @@ class CuboidSpawner : public ParticleSpawner {
      * @brief Defines how big the cuboid will be. Each entry defines the number of particles in the respective direction.
      */
     const std::array<int, 3> grid_dimensions;
+
+    /**
+     * @brief Defines whether the coboid is a membrane
+     */
+    const bool is_membrane;
 
     /**
      * @brief Defines the spacing between neighboring particles in the cuboid
@@ -63,7 +69,7 @@ class CuboidSpawner : public ParticleSpawner {
      */
     const double initial_temperature;
 
-   public:
+public:
     /**
      * @brief Constructor
      * @param lower_left_corner Lower left corner of the cuboid
@@ -79,8 +85,8 @@ class CuboidSpawner : public ParticleSpawner {
      *
      * Constructor to initialize the cuboid spawner. The velocity of the particles is jittered by a Maxwell-Boltzmann distribution.
      */
-    CuboidSpawner(const std::array<double, 3>& lower_left_corner, const std::array<int, 3>& grid_dimensions, double grid_spacing,
-                  double mass, const std::array<double, 3>& initial_velocity, int type, double epsilon = 1.0, double sigma = 1.2,
+    CuboidSpawner(const std::array<double, 3> &lower_left_corner, const std::array<int, 3> &grid_dimensions, bool is_membrane, double grid_spacing,
+                  double mass, const std::array<double, 3> &initial_velocity, int type, double epsilon = 1.0, double sigma = 1.2,
                   bool third_dimension = true, double initial_temperature = 0.1);
 
     /**
@@ -89,7 +95,7 @@ class CuboidSpawner : public ParticleSpawner {
      * @return Number of particles spawned
      * Spawns particles in the given container.
      */
-    int spawnParticles(std::vector<Particle>& particles) const override;
+    int spawnParticles(std::vector<Particle> &particles) const override;
 
     /**
      * @brief Estimate the number of particles to be spawned
