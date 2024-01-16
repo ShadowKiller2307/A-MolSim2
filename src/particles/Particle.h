@@ -24,6 +24,10 @@ class Particle {
      */
     std::array<double, 3> x;
 
+    std::array<double,3> distance_position;
+
+
+
     /**
      * @brief Velocity of the particle
      */
@@ -87,6 +91,11 @@ class Particle {
      */
     void setX(const std::array<double, 3>& x);
 
+    void setDistancePosition(const std::array<double,3>& distance_position);
+
+
+
+
     /**
      * @brief Sets the velocity of the particle
      *
@@ -112,6 +121,9 @@ class Particle {
      * @brief Gets the position of the particle
      */
     [[nodiscard]] const std::array<double, 3>& getX() const;
+
+    [[nodiscard]] const std::array<double,3>& getDistancePosition() const;
+
 
     /**
      * @brief Gets the velocity of the particle

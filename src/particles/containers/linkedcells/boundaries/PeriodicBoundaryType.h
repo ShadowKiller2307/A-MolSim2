@@ -50,4 +50,6 @@ class PeriodicBoundaryType {
      * @param offset The offset to the opposite corner of the container.
      */
     static void addPeriodicHaloParticlesForCorner(LinkedCellsContainer& container, const std::array<double, 3>& offset);
+
+    static std::array<double,3> makeArrayPositive( const std::array<double, 3>& array);
 };

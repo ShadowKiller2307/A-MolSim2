@@ -8,6 +8,8 @@ void PeriodicBoundaryType::pre(LinkedCellsContainer& container) {
     if (container.boundary_types[0] == LinkedCellsContainer::LinkedCellsContainer::BoundaryCondition::PERIODIC) {
         for (Cell* cell : container.left_halo_cell_references) {
             for (Particle* p : cell->getParticleReferences()) {
+                std::array<double,3> positive_pos = makeArrayPositive(p->getX());
+                p->setDistancePosition(positive_pos+std::array<double, 3>{container.domain_size[0], 0, 0});
                 p->setX(p->getX() + std::array<double, 3>{container.domain_size[0], 0, 0});
             }
         }
@@ -16,6 +18,8 @@ void PeriodicBoundaryType::pre(LinkedCellsContainer& container) {
     if (container.boundary_types[1] == LinkedCellsContainer::LinkedCellsContainer::BoundaryCondition::PERIODIC) {
         for (Cell* cell : container.right_halo_cell_references) {
             for (Particle* p : cell->getParticleReferences()) {
+                std::array<double,3> positive_pos = makeArrayPositive(p->getX());
+                p->setDistancePosition(positive_pos+std::array<double, 3>{container.domain_size[0], 0, 0});
                 p->setX(p->getX() + std::array<double, 3>{-container.domain_size[0], 0, 0});
             }
         }
@@ -24,6 +28,8 @@ void PeriodicBoundaryType::pre(LinkedCellsContainer& container) {
     if (container.boundary_types[2] == LinkedCellsContainer::LinkedCellsContainer::BoundaryCondition::PERIODIC) {
         for (Cell* cell : container.bottom_halo_cell_references) {
             for (Particle* p : cell->getParticleReferences()) {
+                std::array<double,3> positive_pos = makeArrayPositive(p->getX());
+                p->setDistancePosition(positive_pos+std::array<double, 3>{0, container.domain_size[1], 0});
                 p->setX(p->getX() + std::array<double, 3>{0, container.domain_size[1], 0});
             }
         }
@@ -32,6 +38,8 @@ void PeriodicBoundaryType::pre(LinkedCellsContainer& container) {
     if (container.boundary_types[3] == LinkedCellsContainer::LinkedCellsContainer::BoundaryCondition::PERIODIC) {
         for (Cell* cell : container.top_halo_cell_references) {
             for (Particle* p : cell->getParticleReferences()) {
+                std::array<double,3> positive_pos = makeArrayPositive(p->getX());
+                p->setDistancePosition(positive_pos+std::array<double, 3>{0, container.domain_size[1], 0});
                 p->setX(p->getX() + std::array<double, 3>{0, -container.domain_size[1], 0});
             }
         }
@@ -40,6 +48,8 @@ void PeriodicBoundaryType::pre(LinkedCellsContainer& container) {
     if (container.boundary_types[4] == LinkedCellsContainer::LinkedCellsContainer::BoundaryCondition::PERIODIC) {
         for (Cell* cell : container.back_halo_cell_references) {
             for (Particle* p : cell->getParticleReferences()) {
+                std::array<double,3> positive_pos = makeArrayPositive(p->getX());
+                p->setDistancePosition(positive_pos+std::array<double, 3>{0, 0, container.domain_size[2]});
                 p->setX(p->getX() + std::array<double, 3>{0, 0, container.domain_size[2]});
             }
         }
@@ -48,6 +58,8 @@ void PeriodicBoundaryType::pre(LinkedCellsContainer& container) {
     if (container.boundary_types[5] == LinkedCellsContainer::LinkedCellsContainer::BoundaryCondition::PERIODIC) {
         for (Cell* cell : container.front_halo_cell_references) {
             for (Particle* p : cell->getParticleReferences()) {
+                std::array<double,3> positive_pos = makeArrayPositive(p->getX());
+                p->setDistancePosition(positive_pos+std::array<double, 3>{0, 0, container.domain_size[2]});
                 p->setX(p->getX() + std::array<double, 3>{0, 0, -container.domain_size[2]});
             }
         }
@@ -232,4 +244,11 @@ void PeriodicBoundaryType::addPeriodicHaloParticlesForCorner(LinkedCellsContaine
         ghost_particle.setX(p->getX() + offset);
         container.addParticle(ghost_particle);
     }
+}
+
+std::array<double,3> PeriodicBoundaryType::makeArrayPositive(const std::array<double, 3> &array) {
+    std::array<double, 3> abs_array{std::abs(array[0]), std::abs(array[1]), std::abs(array[2])};
+
+    return abs_array;
+
 }

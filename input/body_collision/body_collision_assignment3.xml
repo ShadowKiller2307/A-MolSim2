@@ -17,10 +17,10 @@
                 </domain_size>
                 <cutoff_radius>3.0</cutoff_radius>
                 <boundary_conditions>
-                    <left>Outflow</left>
-                    <right>Outflow</right>
-                    <bottom>Outflow</bottom>
-                    <top>Outflow</top>
+                    <left>Periodic</left>
+                    <right>Periodic</right>
+                    <bottom>Periodic</bottom>
+                    <top>Periodic</top>
                     <back>Outflow</back>
                     <front>Outflow</front>
                 </boundary_conditions>

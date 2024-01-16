@@ -263,7 +263,10 @@ Particle XSDToInternalTypeAdapter::convertToParticle(const ParticleType &particl
         throw std::runtime_error("Particle mass must be positive");
     }
 
-    return Particle{position, velocity, force, old_force, mass, static_cast<int>(type)};
+    Particle particle1{position, velocity, force, old_force, mass, static_cast<int>(type)};
+    particle1.setDistancePosition(particle1.getX());
+
+    return particle1;
 }
 
 std::tuple<std::vector<std::shared_ptr<SimpleForceSource>>, std::vector<std::shared_ptr<PairwiseForceSource>>>

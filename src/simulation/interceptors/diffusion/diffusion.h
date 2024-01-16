@@ -26,6 +26,8 @@ public:
     explicit operator std::string() const override;
     void logSummary(int depth) const override;
 
+
+
 private:
     std::unique_ptr<CSVWriter> csv_writer;
 
