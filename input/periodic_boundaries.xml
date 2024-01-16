@@ -46,6 +46,7 @@
                 <y>1</y>
                 <z>1</z>
             </grid_dim>
+            <is_membrane>false</is_membrane>
             <grid_spacing>1.1225</grid_spacing>
             <temperature>0</temperature>
             <mass>1</mass>
@@ -71,6 +72,7 @@
                 <y>5</y>
                 <z>5</z>
             </grid_dim>
+            <is_membrane>false</is_membrane>
             <grid_spacing>1.2</grid_spacing>
             <temperature>0</temperature>
             <mass>1</mass>
