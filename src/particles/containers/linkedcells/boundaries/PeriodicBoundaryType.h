@@ -51,5 +51,10 @@ class PeriodicBoundaryType {
      */
     static void addPeriodicHaloParticlesForCorner(LinkedCellsContainer& container, const std::array<double, 3>& offset);
 
+    /***
+     * Makes the given array positive. Necessary for the distance traveled regardless of periodic teleportation.
+     * @param array
+     * @return
+     */
     static std::array<double,3> makeArrayPositive( const std::array<double, 3>& array);
 };

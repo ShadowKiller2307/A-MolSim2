@@ -22,8 +22,20 @@ public:
      * @param simulation Used for getting the particles
      */
     void operator()(size_t iteration, Simulation& simulation) override;
+
+    /***
+     * @brief Nothing to do here. Therefore it is empty.
+     */
     void onSimulationEnd(size_t iteration, Simulation& simulation) override;
+    /***
+     * @brief Returns the name of the interceptor
+     * @return Name of the interceptor
+     */
     explicit operator std::string() const override;
+    /***
+     * @brief Logs the summary of the interceptor
+     * @param depth Depth of the summary
+     */
     void logSummary(int depth) const override;
 
 
