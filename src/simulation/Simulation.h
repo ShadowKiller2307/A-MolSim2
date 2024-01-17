@@ -38,11 +38,16 @@ class Simulation {
      */
     SimulationOverview runSimulation();
 
+//    static void setStrategy1(bool to_use);
+//    static bool getIsStrategy1();
+
    private:
     /**
      * @brief Reference to the simulation parameters object
      */
     const SimulationParams& params;
+
+//    static bool is_strategy_1;
 
     /**
      * @brief Reference to the `ParticleContainer` on whose content the simulation is performed

@@ -131,3 +131,12 @@ void Simulation::savePerformanceTest(const SimulationOverview& overview, const S
     csv_writer.writeRow({params.num_particles, container_type_string, params.delta_t, overview.total_time_seconds,
                          particle_updates_per_second, overview.total_iterations});
 }
+
+
+//bool Simulation::getIsStrategy1() {
+//    return is_strategy_1;
+//}
+//
+//void Simulation::setStrategy1(bool to_use) {
+//    is_strategy_1 = to_use;
+//}

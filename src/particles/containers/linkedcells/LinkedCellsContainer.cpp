@@ -9,6 +9,7 @@
 #include "particles/containers/linkedcells/boundaries/ReflectiveBoundaryType.h"
 #include "physics/pairwiseforces/LennardJonesForce.h"
 #include "utils/ArrayUtils.h"
+#include <omp.h>
 
 /*
     Methods of the LinkedCellsContainer
@@ -91,7 +92,7 @@ void LinkedCellsContainer::addParticle(Particle&& p) {
 void LinkedCellsContainer::prepareForceCalculation() {
     // update the particle references in the cells in case the particles have moved
     updateCellsParticleReferences();
-
+    //TODO maybe parallelize
     ReflectiveBoundaryType::pre(*this);
     OutflowBoundaryType::pre(*this);
     PeriodicBoundaryType::pre(*this);
@@ -101,15 +102,29 @@ void LinkedCellsContainer::prepareForceCalculation() {
 }
 
 void LinkedCellsContainer::applySimpleForces(const std::vector<std::shared_ptr<SimpleForceSource>>& simple_force_sources) {
+    // strategy 1: distribute the particles over the threads
+    #pragma omp parallel for schedule(static, 100)
+    //#pragma omp parallel for schedule(dynamic)
     for (Particle& p : particles) {
         for (const auto& force_source : simple_force_sources) {
             p.setF(p.getF() + force_source->calculateForce(p));
+        }
+    }
+
+    // strategy 2: distribute the cells over the threads
+    for (Cell *cell : occupied_cells_references) {
+        for (auto it1 = cell->getParticleReferences().begin(); it1 != cell->getParticleReferences().end(); ++it1) {
+            Particle* p = *it1;
+            for (const auto& force_source : simple_force_sources) {
+               p->setF(p->getF() + force_source->calculateForce(*p));
+            }
         }
     }
 }
 
 void LinkedCellsContainer::applyPairwiseForces(const std::vector<std::shared_ptr<PairwiseForceSource>>& force_sources) {
     // apply the boundary conditions
+    // TODO: look what can be parallelized here
     ReflectiveBoundaryType::applyBoundaryConditions(*this);
     OutflowBoundaryType::applyBoundaryConditions(*this);
     PeriodicBoundaryType::applyBoundaryConditions(*this);
@@ -117,10 +132,12 @@ void LinkedCellsContainer::applyPairwiseForces(const std::vector<std::shared_ptr
     // clear the already influenced by vector in the cells
     // this is needed to prevent the two cells from affecting each other twice
     // since newtons third law is used
+    #pragma omp parallel for schedule(dynamic)
     for (Cell* cell : domain_cell_references) {
         cell->clearAlreadyInfluencedBy();
     }
 
+    #pragma omp parallel for schedule(dynamic)
     for (Cell* cell : occupied_cells_references) {
         // skip halo cells
         // if (cell->getCellType() == Cell::CellType::HALO) continue;
@@ -153,7 +170,7 @@ void LinkedCellsContainer::applyPairwiseForces(const std::vector<std::shared_ptr
                     }
                 }
 
-                neighbour->addAlreadyInfluencedBy(cell);
+                neighbour->addAlreadyInfluencedBy(cell); // this should be a loop carried dependency
             }
         }
     }
