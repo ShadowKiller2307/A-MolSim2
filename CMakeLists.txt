@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # define project name, version
 project(PSEMolDyn_GroupC VERSION 0.0.1)
 
+option(ENABLE_OPENMP "Enable OpenMP" OFF)
+
 # let ccmake and cmake-gui offer the default build type options
 set_property(CACHE CMAKE_BUILD_TYPE
         PROPERTY STRINGS "Debug;Release;RelWithDebInfo;MinSizeRel")
@@ -29,12 +31,14 @@ endif()
 # modules
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/)
 
-find_package(OpenMP REQUIRED)
-if(OPENMP_FOUND)
-    message(STATUS "OpenMP found")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+if(ENABLE_OPENMP)
+    find_package(OpenMP REQUIRED)
+    if(OPENMP_FOUND)
+        message(STATUS "OpenMP enabled and found")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+        add_definitions(OPENMP)
     endif()
-
+endif ()
 
 # project dependencies
 include(boost_program_options)
