@@ -36,7 +36,7 @@ if(ENABLE_OPENMP)
     if(OPENMP_FOUND)
         message(STATUS "OpenMP enabled and found")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-        add_definitions(OPENMP)
+        add_definitions(-D_OPENMP)
     endif()
 endif ()
 
