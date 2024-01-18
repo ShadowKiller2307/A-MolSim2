@@ -206,6 +206,7 @@
       <xs:element name="LennardJones" type="LennardJonesType" minOccurs="0" />
       <xs:element name="Gravitational" type="GravitationalType" minOccurs="0" />
       <xs:element name="GlobalDownwardsGravity" type="GlobalGravityType" minOccurs="0" />
+      <xs:element name="SmoothedLJ" type="LennardJonesType" minOccurs="0" />
     </xs:all>
   </xs:complexType>
 

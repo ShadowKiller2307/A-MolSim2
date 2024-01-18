@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<!-- just a sanity check: body collision rewritten to xml -->
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:noNamespaceSchemaLocation="../simulation_schema.xsd">
+
+    <settings>
+        <delta_t>0.0001</delta_t>
+        <end_time>5</end_time>
+        <third_dimension>true</third_dimension>
+        <particle_container>
+            <linkedcells_container>
+                <domain_size>
+                    <x>9.2</x>
+                    <y>9.2</y>
+                    <z>9.2</z>
+                </domain_size>
+                <cutoff_radius>2.36</cutoff_radius>
+                <boundary_conditions>
+                    <left>Periodic</left>
+                    <right>Periodic</right>
+                    <bottom>Periodic</bottom>
+                    <top>Periodic</top>
+                    <back>Periodic</back>
+                    <front>Periodic</front>
+                </boundary_conditions>
+            </linkedcells_container>
+        </particle_container>
+        <forces>
+            <LennardJones />
+        </forces>
+        <interceptors>
+            <FrameWriter output_format="vtu" fps="24" video_length_s="30" />
+            <Thermostat target_temperature="3.0" max_temperature_change="0.001" application_interval="40"
+                />
+        </interceptors>
+    </settings>
+
+
+    <particle_source>
+        <cuboid_spawner>
+            <lower_left_front_corner>
+                <x>0.575</x>
+                <y>0.575</y>
+                <z>0.575</z>
+            </lower_left_front_corner>
+            <grid_dim>
+                <x>8</x>
+                <y>8</y>
+                <z>8</z>
+            </grid_dim>
+            <is_membrane>false</is_membrane>
+            <grid_spacing>1.15</grid_spacing>
+            <temperature>0.01</temperature>
+            <mass>1</mass>
+            <velocity>
+                <x>0.0</x>
+                <y>0.0</y>
+                <z>0.0</z>
+            </velocity>
+            <type>0</type>
+            <epsilon>1.0</epsilon>
+            <sigma>1.0</sigma>
+        </cuboid_spawner>
+
+
+    </particle_source>
+
+</configuration>

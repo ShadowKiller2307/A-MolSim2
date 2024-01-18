@@ -137,7 +137,7 @@ void LinkedCellsContainer::applyPairwiseForces(const std::vector<std::shared_ptr
         cell->clearAlreadyInfluencedBy();
     }
 
-    #pragma omp parallel for schedule(dynamic)
+    //#pragma omp parallel for schedule(dynamic)
     for (Cell* cell : occupied_cells_references) {
         // skip halo cells
         // if (cell->getCellType() == Cell::CellType::HALO) continue;
