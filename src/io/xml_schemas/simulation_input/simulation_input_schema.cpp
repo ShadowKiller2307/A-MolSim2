@@ -1830,6 +1830,36 @@ GlobalDownwardsGravity (::std::unique_ptr< GlobalDownwardsGravity_type > x)
   this->GlobalDownwardsGravity_.set (std::move (x));
 }
 
+const ForcesType::SmoothedLJ_optional& ForcesType::
+SmoothedLJ () const
+{
+  return this->SmoothedLJ_;
+}
+
+ForcesType::SmoothedLJ_optional& ForcesType::
+SmoothedLJ ()
+{
+  return this->SmoothedLJ_;
+}
+
+void ForcesType::
+SmoothedLJ (const SmoothedLJ_type& x)
+{
+  this->SmoothedLJ_.set (x);
+}
+
+void ForcesType::
+SmoothedLJ (const SmoothedLJ_optional& x)
+{
+  this->SmoothedLJ_ = x;
+}
+
+void ForcesType::
+SmoothedLJ (::std::unique_ptr< SmoothedLJ_type > x)
+{
+  this->SmoothedLJ_.set (std::move (x));
+}
+
 
 // LogLevelType
 //
@@ -5164,7 +5194,8 @@ ForcesType ()
 : ::xml_schema::type (),
   LennardJones_ (this),
   Gravitational_ (this),
-  GlobalDownwardsGravity_ (this)
+  GlobalDownwardsGravity_ (this),
+  SmoothedLJ_ (this)
 {
 }
 
@@ -5175,7 +5206,8 @@ ForcesType (const ForcesType& x,
 : ::xml_schema::type (x, f, c),
   LennardJones_ (x.LennardJones_, f, this),
   Gravitational_ (x.Gravitational_, f, this),
-  GlobalDownwardsGravity_ (x.GlobalDownwardsGravity_, f, this)
+  GlobalDownwardsGravity_ (x.GlobalDownwardsGravity_, f, this),
+  SmoothedLJ_ (x.SmoothedLJ_, f, this)
 {
 }
 
@@ -5186,7 +5218,8 @@ ForcesType (const ::xercesc::DOMElement& e,
 : ::xml_schema::type (e, f | ::xml_schema::flags::base, c),
   LennardJones_ (this),
   Gravitational_ (this),
-  GlobalDownwardsGravity_ (this)
+  GlobalDownwardsGravity_ (this),
+  SmoothedLJ_ (this)
 {
   if ((f & ::xml_schema::flags::base) == 0)
   {
@@ -5247,6 +5280,20 @@ parse (::xsd::cxx::xml::dom::parser< char >& p,
       }
     }
 
+    // SmoothedLJ
+    //
+    if (n.name () == "SmoothedLJ" && n.namespace_ ().empty ())
+    {
+      ::std::unique_ptr< SmoothedLJ_type > r (
+        SmoothedLJ_traits::create (i, f, this));
+
+      if (!this->SmoothedLJ_)
+      {
+        this->SmoothedLJ_.set (::std::move (r));
+        continue;
+      }
+    }
+
     break;
   }
 }
@@ -5267,6 +5314,7 @@ operator= (const ForcesType& x)
     this->LennardJones_ = x.LennardJones_;
     this->Gravitational_ = x.Gravitational_;
     this->GlobalDownwardsGravity_ = x.GlobalDownwardsGravity_;
+    this->SmoothedLJ_ = x.SmoothedLJ_;
   }
 
   return *this;
@@ -6938,6 +6986,18 @@ operator<< (::xercesc::DOMElement& e, const ForcesType& i)
         e));
 
     s << *i.GlobalDownwardsGravity ();
+  }
+
+  // SmoothedLJ
+  //
+  if (i.SmoothedLJ ())
+  {
+    ::xercesc::DOMElement& s (
+      ::xsd::cxx::xml::dom::create_element (
+        "SmoothedLJ",
+        e));
+
+    s << *i.SmoothedLJ ();
   }
 }
 
