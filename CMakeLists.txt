@@ -28,16 +28,27 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
     add_compile_options(-O3)
 endif()
 
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_options(-pg)
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pg")
+    set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -pg")
+endif()
+
 # modules
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/)
 
 if(ENABLE_OPENMP)
+    message(STATUS "OpenMP is enabled")
     find_package(OpenMP REQUIRED)
     if(OPENMP_FOUND)
         message(STATUS "OpenMP enabled and found")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-        add_definitions(-D_OPENMP)
+
     endif()
+else ()
+    message(STATUS "OpenMP is disabled")
+
+
 endif ()
 
 # project dependencies
