@@ -117,4 +117,6 @@ class ParticleContainer {
      * @return Vector of all particles in the container
      */
     [[nodiscard]] virtual const std::vector<Particle>& getParticles() const = 0;
+
+    [[nodiscard]] virtual const std::array<double,3>& getDomainSize() const = 0;
 };

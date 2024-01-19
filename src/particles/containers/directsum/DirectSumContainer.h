@@ -16,6 +16,8 @@ class DirectSumContainer : public ParticleContainer {
      */
     std::vector<Particle> particles;
 
+    std::array<double,3> empty_array;
+
    public:
     /**
      * @brief Default constructor
@@ -154,4 +156,5 @@ class DirectSumContainer : public ParticleContainer {
      * Uses newton's third law to calculate the forces between the particles in a more optimized way.
      */
     void applyPairwiseForces(const std::vector<std::shared_ptr<PairwiseForceSource>>& pairwise_force_sources) override;
+    [[nodiscard]] const std::array<double, 3>& getDomainSize() const override;
 };

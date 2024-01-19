@@ -1,6 +1,7 @@
 #include "DiffusionInterceptor.h"
 #include "utils/ArrayUtils.h"
 #include "simulation/SimulationParams.h"
+#include "omp.h"
 DiffusionInterceptor::DiffusionInterceptor() = default;
 
 void DiffusionInterceptor::onSimulationStart(Simulation &simulation) {
@@ -18,15 +19,28 @@ void DiffusionInterceptor::onSimulationStart(Simulation &simulation) {
 void DiffusionInterceptor::operator()(size_t iteration, Simulation& simulation) {
 
     double var = 0;
+
     auto number_of_particles = static_cast<double>(simulation.particle_container->size());
     double coefficient = 1.0/number_of_particles;
 
     double sum = 0;
     size_t i = 0;
     for (auto & particle : *simulation.particle_container) {
-        std::array<double,3> distance_pos = particle.getDistancePosition();
-        double norm = ArrayUtils::L2Norm(distance_pos-previous_references.at(i));
-        norm = std::pow(norm,0.5);
+
+        std::array<double,3> displacement = particle.getX()-previous_references.at(i);
+        //for periodic cases
+        for(size_t j = 0;j<3;j++){
+            if (displacement.at(j) > 0.5*simulation.particle_container->getDomainSize().at(j)){
+                displacement.at(j) -= simulation.particle_container->getDomainSize().at(j);
+            }
+            else if(displacement.at(j) < -0.5 * simulation.particle_container->getDomainSize().at(j)){
+                displacement.at(j) += simulation.particle_container->getDomainSize().at(j);
+            }
+        }
+
+
+        double norm = ArrayUtils::L2Norm(displacement);
+        norm *=norm;
         previous_references.at(i) = particle.getX();
         sum+=norm;
         i++;

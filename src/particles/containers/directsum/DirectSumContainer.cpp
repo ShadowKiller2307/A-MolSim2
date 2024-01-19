@@ -48,3 +48,9 @@ void DirectSumContainer::applyPairwiseForces(const std::vector<std::shared_ptr<P
         }
     }
 }
+
+const std::array<double, 3> &DirectSumContainer::getDomainSize() const {
+    std::array<double,3> arr{};
+    return empty_array;
+}
+

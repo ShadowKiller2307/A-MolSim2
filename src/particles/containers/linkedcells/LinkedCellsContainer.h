@@ -157,7 +157,7 @@ class LinkedCellsContainer : public ParticleContainer {
      *
      * Returns the domain size as a 3D array.
      */
-    const std::array<double, 3>& getDomainSize() const;
+    const std::array<double, 3>& getDomainSize() const override;
 
     /**
      * @brief Returns the cutoff radius

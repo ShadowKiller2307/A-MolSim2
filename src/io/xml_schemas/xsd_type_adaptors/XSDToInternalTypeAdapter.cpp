@@ -276,11 +276,11 @@ XSDToInternalTypeAdapter::convertToForces(const ForcesType &forces)
     std::vector<std::shared_ptr<SimpleForceSource>> simple_force_sources;
     std::vector<std::shared_ptr<PairwiseForceSource>> pairwise_force_sources;
 
-    //TODO Uncomment after runin the mapping script
-//    if(forces.SmoothedLJ()){
-//        pairwise_force_sources.push_back(std::make_shared<SmoothedLJ>());
-//    }
-    if (forces.LennardJones())
+
+    if(forces.SmoothedLJ()){
+        pairwise_force_sources.push_back(std::make_shared<SmoothedLJ>());
+    }
+    else if (forces.LennardJones())
     {
         pairwise_force_sources.push_back(std::make_shared<LennardJonesForce>());
     }
