@@ -99,14 +99,14 @@ bool Particle::operator==(const Particle &other) const
     return (x == other.x) and (v == other.v) and (f == other.f) and (type == other.type) and (m == other.m) and (old_f == other.old_f);
 }
 
-void Particle::setDistancePosition(const std::array<double, 3> &distance_pos) {
-    this->distance_position = distance_pos;
+
+void Particle::setDisplacementToAdd(const std::array<double, 3> &displacement) {
+    this->displacement_to_add = displacement;
 }
 
-const std::array<double, 3> &Particle::getDistancePosition() const {
-    return distance_position;
+const std::array<double, 3> &Particle::getDisplacementToAdd() const {
+    return displacement_to_add;
 }
-
 
 
 std::ostream &operator<<(std::ostream &stream, Particle &p)

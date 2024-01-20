@@ -9,7 +9,7 @@ void PeriodicBoundaryType::pre(LinkedCellsContainer& container) {
         for (Cell* cell : container.left_halo_cell_references) {
             for (Particle* p : cell->getParticleReferences()) {
                 std::array<double,3> positive_pos = makeArrayPositive(p->getX());
-                p->setDistancePosition(positive_pos+std::array<double, 3>{container.domain_size[0], 0, 0});
+                p->setDisplacementToAdd(p->getDisplacementToAdd()-std::array<double, 3>{container.domain_size[0], 0, 0});
                 p->setX(p->getX() + std::array<double, 3>{container.domain_size[0], 0, 0});
             }
         }
@@ -19,7 +19,7 @@ void PeriodicBoundaryType::pre(LinkedCellsContainer& container) {
         for (Cell* cell : container.right_halo_cell_references) {
             for (Particle* p : cell->getParticleReferences()) {
                 std::array<double,3> positive_pos = makeArrayPositive(p->getX());
-                p->setDistancePosition(positive_pos+std::array<double, 3>{container.domain_size[0], 0, 0});
+                p->setDisplacementToAdd(p->getDisplacementToAdd()+std::array<double, 3>{container.domain_size[0], 0, 0});
                 p->setX(p->getX() + std::array<double, 3>{-container.domain_size[0], 0, 0});
             }
         }
@@ -29,7 +29,7 @@ void PeriodicBoundaryType::pre(LinkedCellsContainer& container) {
         for (Cell* cell : container.bottom_halo_cell_references) {
             for (Particle* p : cell->getParticleReferences()) {
                 std::array<double,3> positive_pos = makeArrayPositive(p->getX());
-                p->setDistancePosition(positive_pos+std::array<double, 3>{0, container.domain_size[1], 0});
+                p->setDisplacementToAdd(p->getDisplacementToAdd()-std::array<double, 3>{0, container.domain_size[1], 0});
                 p->setX(p->getX() + std::array<double, 3>{0, container.domain_size[1], 0});
             }
         }
@@ -39,7 +39,7 @@ void PeriodicBoundaryType::pre(LinkedCellsContainer& container) {
         for (Cell* cell : container.top_halo_cell_references) {
             for (Particle* p : cell->getParticleReferences()) {
                 std::array<double,3> positive_pos = makeArrayPositive(p->getX());
-                p->setDistancePosition(positive_pos+std::array<double, 3>{0, container.domain_size[1], 0});
+                p->setDisplacementToAdd(p->getDisplacementToAdd()+std::array<double, 3>{0, container.domain_size[1], 0});
                 p->setX(p->getX() + std::array<double, 3>{0, -container.domain_size[1], 0});
             }
         }
@@ -49,7 +49,7 @@ void PeriodicBoundaryType::pre(LinkedCellsContainer& container) {
         for (Cell* cell : container.back_halo_cell_references) {
             for (Particle* p : cell->getParticleReferences()) {
                 std::array<double,3> positive_pos = makeArrayPositive(p->getX());
-                p->setDistancePosition(positive_pos+std::array<double, 3>{0, 0, container.domain_size[2]});
+                p->setDisplacementToAdd(p->getDisplacementToAdd()-std::array<double, 3>{0, 0, container.domain_size[2]});
                 p->setX(p->getX() + std::array<double, 3>{0, 0, container.domain_size[2]});
             }
         }
@@ -59,7 +59,7 @@ void PeriodicBoundaryType::pre(LinkedCellsContainer& container) {
         for (Cell* cell : container.front_halo_cell_references) {
             for (Particle* p : cell->getParticleReferences()) {
                 std::array<double,3> positive_pos = makeArrayPositive(p->getX());
-                p->setDistancePosition(positive_pos+std::array<double, 3>{0, 0, container.domain_size[2]});
+                p->setDisplacementToAdd(p->getDisplacementToAdd()+std::array<double, 3>{0, 0, container.domain_size[2]});
                 p->setX(p->getX() + std::array<double, 3>{0, 0, -container.domain_size[2]});
             }
         }

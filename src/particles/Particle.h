@@ -24,10 +24,11 @@ class Particle {
      */
     std::array<double, 3> x;
 
-    /// Used for the position of the particle regardless of periodic teleportation.
-    std::array<double,3> distance_position;
 
-
+    /**
+     * @brief Used for adding the necessary displacement after crossing periodic boundaries
+     */
+    std::array<double,3> displacement_to_add;
 
     /**
      * @brief Velocity of the particle
@@ -96,10 +97,10 @@ class Particle {
      * @brief Sets the distance position of the particle
      * @param distance_position
      */
-    void setDistancePosition(const std::array<double,3>& distance_position);
 
 
 
+    void setDisplacementToAdd(const std::array<double,3>& displacement_to_add);
 
     /**
      * @brief Sets the velocity of the particle
@@ -130,7 +131,9 @@ class Particle {
     /**
      * @brief Gets the distance position of the particle
      */
-    [[nodiscard]] const std::array<double,3>& getDistancePosition() const;
+
+
+    [[nodiscard]] const std::array<double,3>& getDisplacementToAdd() const;
 
 
     /**

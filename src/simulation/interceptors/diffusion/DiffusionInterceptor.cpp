@@ -28,16 +28,8 @@ void DiffusionInterceptor::operator()(size_t iteration, Simulation& simulation) 
     for (auto & particle : *simulation.particle_container) {
 
         std::array<double,3> displacement = particle.getX()-previous_references.at(i);
-        //for periodic cases
-        for(size_t j = 0;j<3;j++){
-            if (displacement.at(j) > 0.5*simulation.particle_container->getDomainSize().at(j)){
-                displacement.at(j) -= simulation.particle_container->getDomainSize().at(j);
-            }
-            else if(displacement.at(j) < -0.5 * simulation.particle_container->getDomainSize().at(j)){
-                displacement.at(j) += simulation.particle_container->getDomainSize().at(j);
-            }
-        }
-
+        displacement= displacement+particle.getDisplacementToAdd();
+        particle.setDisplacementToAdd({0,0,0});
 
         double norm = ArrayUtils::L2Norm(displacement);
         norm *=norm;

@@ -265,7 +265,7 @@ Particle XSDToInternalTypeAdapter::convertToParticle(const ParticleType &particl
     }
 
     Particle particle1{position, velocity, force, old_force, mass, static_cast<int>(type)};
-    particle1.setDistancePosition(particle1.getX());
+    particle1.setDisplacementToAdd({0,0,0});
 
     return particle1;
 }
