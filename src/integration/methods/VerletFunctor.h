@@ -21,4 +21,12 @@ class VerletFunctor : public IntegrationFunctor {
     void step(std::unique_ptr<ParticleContainer>& particle_container,
               const std::vector<std::shared_ptr<SimpleForceSource>>& simple_force_sources,
               const std::vector<std::shared_ptr<PairwiseForceSource>>& pairwise_force_sources, double delta_t) const override;
+
+    template<unsigned N>
+    void templated_step(std::unique_ptr<ParticleContainer>& particle_container,
+                                 const std::vector<std::shared_ptr<SimpleForceSource>>& simple_force_sources,
+                                 const std::vector<std::shared_ptr<PairwiseForceSource>>& pairwise_force_sources, double delta_t);
+
+/*private:
+    unsigned parallelization strategy*/
 };

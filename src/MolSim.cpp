@@ -20,7 +20,16 @@ int main(int argc, char* argsv[]) {
     // Print simulation info
     params.logSummary();
 
-    auto overview = simulation.runSimulation();
+    auto overview = simulation.runSimulation<3>();
+
+    // TODO: following lines cause linking error
+/*#ifdef STRATEGY_1
+    auto overview = simulation.runSimulation<1>();
+#elif STRATEGY_2
+    auto overview = simulation.runSimulation<2>();
+#else
+        auto overview = simulation.runSimulation<3>();
+#endif*/
 
     // Print simulation overview
     overview.logSummary();

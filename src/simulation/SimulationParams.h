@@ -33,12 +33,13 @@ class SimulationParams {
     struct LinkedCellsType {
         std::array<double, 3> domain_size;
         double cutoff_radius;
+        bool strategy_1;
         std::array<LinkedCellsContainer::BoundaryCondition, 6> boundary_conditions;
 
         LinkedCellsType() = delete;
         LinkedCellsType(const std::array<double, 3>& domain_size, double cutoff_radius,
-                        const std::array<LinkedCellsContainer::BoundaryCondition, 6>& boundary_conditions)
-            : domain_size(domain_size), cutoff_radius(cutoff_radius), boundary_conditions(boundary_conditions) {}
+                        const std::array<LinkedCellsContainer::BoundaryCondition, 6>& boundary_conditions)//, bool strategy_1)
+            : domain_size(domain_size), cutoff_radius(cutoff_radius), boundary_conditions(boundary_conditions), strategy_1(strategy_1) {}
 
         explicit operator std::string() const {
             return "LinkedCells ([" + std::to_string(domain_size[0]) + "x" + std::to_string(domain_size[1]) + "x" +

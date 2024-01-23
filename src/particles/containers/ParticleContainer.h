@@ -2,10 +2,12 @@
 
 #include <memory>
 #include <vector>
+#include <map>
 
 #include "particles/Particle.h"
 #include "physics/pairwiseforces/PairwiseForceSource.h"
 #include "physics/simpleforces/SimpleForceSource.h"
+#include "particles/containers/linkedcells/Subdomains/Subdomain.h"
 
 /**
  * @brief Interface for particle containers
@@ -61,6 +63,16 @@ class ParticleContainer {
      * Uses newton's third law to calculate the forces between the particles in an optimized way.
      */
     virtual void applyPairwiseForces(const std::vector<std::shared_ptr<PairwiseForceSource>>& pairwise_force_sources) = 0;
+
+  /*  virtual void applyPairwiseForcesDomains(const std::vector<std::shared_ptr<PairwiseForceSource>>& pairwise_force_sources) = 0;
+
+    virtual void applySimpleForcesDomains(const std::vector<std::shared_ptr<SimpleForceSource>>& simple_force_sources) = 0;
+
+    virtual void updatePositionSubdomain() = 0;
+
+    virtual void updateVelocitySubdomain() = 0;*/
+
+    virtual std::map<unsigned int, Subdomain*> getSubdomains() = 0;
 
     /**
      * @brief Reserves space for n particles
@@ -119,4 +131,5 @@ class ParticleContainer {
     [[nodiscard]] virtual const std::vector<Particle>& getParticles() const = 0;
 
     [[nodiscard]] virtual const std::array<double,3>& getDomainSize() const = 0;
+
 };

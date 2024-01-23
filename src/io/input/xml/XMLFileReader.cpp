@@ -207,7 +207,16 @@ std::tuple<std::vector<Particle>, SimulationParams> prepareParticles(std::filesy
             Simulation simulation{sub_particles, sub_config};
 
             sub_config.logSummary(depth);
-            auto result = simulation.runSimulation();
+            auto result = simulation.runSimulation<3>();
+
+            // TODO: following lines cause linking error
+/*#ifdef STRATEGY_1
+            auto result = simulation.runSimulation<1>();
+//#elif STRATEGY_2
+            auto result = simulation.runSimulation<2>();
+//#else
+            auto result = simulation.runSimulation<3>();
+#endif*/
             result.logSummary(depth);
 
             // Write the checkpoint file

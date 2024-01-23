@@ -15,7 +15,9 @@ target_include_directories(project_lib PUBLIC
 
 target_link_libraries(project_lib PUBLIC XercesC::XercesC spdlog::spdlog Boost::program_options)
 
-add_executable(MolSim MolSim.cpp)
+add_executable(MolSim MolSim.cpp
+        particles/containers/linkedcells/Subdomains/Subdomain.cpp
+        particles/containers/linkedcells/Subdomains/Subdomain.h)
 target_link_libraries(MolSim PUBLIC project_lib)
 
 # activate all compiler warnings.
@@ -23,3 +25,6 @@ target_compile_options(
     MolSim PRIVATE 
         $<$<CXX_COMPILER_ID:GNU>:-Wall>
         $<$<CXX_COMPILER_ID:Intel>:-w3 -wd383,981,1418,1572,2259>)
+
+target_compile_definitions(MolSim PRIVATE STRATEGY_1) #custom compiler option for strategy 1
+target_compile_definitions(MolSim PRIVATE STRATEGY_2) #custom compiler option for strategy 2

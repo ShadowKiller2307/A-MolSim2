@@ -43,9 +43,10 @@ Simulation::Simulation(const std::vector<Particle>& initial_particles, const Sim
 }
 
 Simulation::~Simulation() = default;
-
+/*
+template<unsigned N>
 SimulationOverview Simulation::runSimulation() {
-    size_t iteration = 0;
+    *//*size_t iteration = 0;
     double simulated_time = 0;
 
     // Calculate initial forces
@@ -65,9 +66,24 @@ SimulationOverview Simulation::runSimulation() {
 
     auto t_start = std::chrono::high_resolution_clock::now();
 
-    while (simulated_time < params.end_time) {
-        integration_functor->step(particle_container, params.simple_forces, params.pairwise_forces, params.delta_t);
+    *//**//*if (N == 1 || N == 2) {
+        static_cast<LinkedCellsContainer>(*particle_container);
+    }*//**//*
 
+    std::unique_ptr<VerletFunctor> verletFunctor;
+
+    while (simulated_time < params.end_time) {
+        verletFunctor->templated_step<N>();
+        *//**//* if constexpr (N == 1) { //
+             verletFunctor->templated_step<N>();
+             //integration_functor->step(particle_container, params.simple_forces, params.pairwise_forces, params.delta_t);
+         }
+         else if constexpr (N == 2) {
+
+         }
+         else {
+
+         }*//**//*
         ++iteration;
         simulated_time += params.delta_t;
 
@@ -104,8 +120,8 @@ SimulationOverview Simulation::runSimulation() {
         savePerformanceTest(overview, params);
     }
 
-    return overview;
-}
+    return overview;*//*
+}*/
 
 void Simulation::savePerformanceTest(const SimulationOverview& overview, const SimulationParams& params) {
     // write the results to the file

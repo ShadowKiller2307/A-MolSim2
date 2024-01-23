@@ -4,15 +4,18 @@
 #include <ranges>
 #include <unordered_set>
 #include <vector>
+//#include <map>
 
 #include "cells/Cell.h"
 #include "particles/containers/ParticleContainer.h"
+#include "Subdomains/Subdomain.h"
 
 /**
  * @brief Extension of the `ParticleContainer` class using a linked cells data structure for improved performance over the direct sum
  * approach
  */
 class LinkedCellsContainer : public ParticleContainer {
+   // using Subdomain = std::unordered_set<Cell*>;
    public:
     /**
      * @brief Boundary type enum for labeling the sides of the domain
@@ -80,6 +83,14 @@ class LinkedCellsContainer : public ParticleContainer {
      * Applies the given simple force sources to the particles in the container.
      */
     void applySimpleForces(const std::vector<std::shared_ptr<SimpleForceSource>>& simple_force_sources) override;
+
+   /* virtual void applySimpleForcesDomains(const std::vector<std::shared_ptr<SimpleForceSource>>& simple_force_sources) = 0;
+
+    void applyPairwiseForcesDomains(const std::vector<std::shared_ptr<PairwiseForceSource>>& pairwise_force_sources) override;
+
+    void updatePositionSubdomain() override;
+
+    void updateVelocitySubdomain() override;*/
 
     /**
      * @brief Applies the given force sources to the particles
@@ -244,6 +255,11 @@ class LinkedCellsContainer : public ParticleContainer {
     void initCells();
 
     /**
+     * @brief initialize the subdomains if parallelization strategy 1 is chosen
+     */
+    void initSubdomains();
+
+    /**
      * @brief Sets the neighbour references for each cell in the cell vector
      */
     void initCellNeighbourReferences();
@@ -253,11 +269,15 @@ class LinkedCellsContainer : public ParticleContainer {
      */
     void updateCellsParticleReferences();
 
+    void updateCellsParticleReferencesOptimized();
+
     /**
      * @brief Removes all particles in the halo cells from the particles vector. ATTENTION: A particle reference update must be triggered
      * manually after this operation!
      */
     void deleteHaloParticles();
+
+    std::map<unsigned int, Subdomain*> getSubdomains() override;
 
     /**
      * @brief Friend class to allow access to the internal data structures
@@ -394,4 +414,13 @@ class LinkedCellsContainer : public ParticleContainer {
      * @brief References to the halo cells on the front (z = domain_num_cells[2])
      */
     std::vector<Cell*> front_halo_cell_references;
+
+    /**
+    * @brief list of subdomains initialized if parallelization strategy 1 is chosen
+    */
+    std::map<unsigned int, Subdomain*> subdomains;
+
+    double delta_t;
+
+    double gravityConstant;
 };

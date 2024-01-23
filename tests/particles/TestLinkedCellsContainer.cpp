@@ -201,3 +201,11 @@ TEST(LinkedCellsContainer, AddParticle) {
     Particle out_of_bounds({5, 5, 5}, {0, 0, 0}, 0.0, 0.0);
     EXPECT_THROW(container.addParticle(out_of_bounds), std::runtime_error);
 }
+
+
+/**
+ * @brief This test should check if the subdomains are instantiated correctly depending on the number of threads
+ */
+TEST(LinkedCellsContainer, InstantiateSubdomains) {
+
+}

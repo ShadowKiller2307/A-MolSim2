@@ -29,4 +29,12 @@ class IntegrationFunctor {
     virtual void step(std::unique_ptr<ParticleContainer>& particle_container,
                       const std::vector<std::shared_ptr<SimpleForceSource>>& simple_force_sources,
                       const std::vector<std::shared_ptr<PairwiseForceSource>>& pairwise_force_sources, double delta_t) const = 0;
-};
+
+   /* virtual void step_strategy_1(std::unique_ptr<ParticleContainer>& particle_container,
+                      const std::vector<std::shared_ptr<SimpleForceSource>>& simple_force_sources,
+                      const std::vector<std::shared_ptr<PairwiseForceSource>>& pairwise_force_sources, double delta_t) const = 0;
+
+    virtual void step_strategy_2(std::unique_ptr<ParticleContainer>& particle_container,
+                                 const std::vector<std::shared_ptr<SimpleForceSource>>& simple_force_sources,
+                                 const std::vector<std::shared_ptr<PairwiseForceSource>>& pairwise_force_sources, double delta_t) const = 0;
+*/};

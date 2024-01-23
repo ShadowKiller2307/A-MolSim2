@@ -54,3 +54,27 @@ const std::array<double, 3> &DirectSumContainer::getDomainSize() const {
     return empty_array;
 }
 
+/*
+void DirectSumContainer::applySimpleForcesDomains(
+        const std::vector<std::shared_ptr<SimpleForceSource>> &simple_force_sources) {
+    // do nothing here
+}
+
+void DirectSumContainer::updatePositionSubdomain() {
+    // do nothing
+}
+
+void DirectSumContainer::updateVelocitySubdomain() {
+    // do nothing
+}*/
+
+std::map<unsigned int, Subdomain *> DirectSumContainer::getSubdomains() {
+    return {};
+}
+
+/*std::map<unsigned int, Subdomain*> DirectSumContainer::getSubdomains() {
+    return std::map<unsigned int, Subdomain*>();
+}*/
+
+
+
