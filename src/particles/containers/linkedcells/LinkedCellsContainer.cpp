@@ -434,26 +434,40 @@ void LinkedCellsContainer::updateCellsParticleReferences() {
         cell->addParticleReference(&p);
     }
 }
+/*
+ * for(cell : cells)
+ *    for(particle : cell)
+ *        newCell  =computeCellIndex(particle)
+ *        if
+ *
+ */
 
 void LinkedCellsContainer::updateCellsParticleReferencesOptimized() {
-    //only move the particles, don't delete every single cell
-    for (Particle& p : particles) {
-        // 1. index berechnen
-        Cell* cell = particlePosToCell(p.getX());
-        auto iterator=std::find(cell->getParticleReferences().begin(), cell->getParticleReferences().end(),&p);
 
-        if (iterator != cell->getParticleReferences().end()) {
-            cell->getParticleReferences().erase(iterator);
-            cell->addParticleReference(&p);
-        } else {
-            // The element was not found
-            cell->addParticleReference(&p);
+    std::unordered_set<Cell*> newOccupiedCells;
+    //std::unordered_map<Particle*,Cell*> mapParticleToNewCell;
+
+    for(Cell* cell:occupied_cells_references){
+        for(Particle* p:cell->getParticleReferences()){
+            Cell* newCell = particlePosToCell(p->getX()); // new index
+            if (newCell == cell) {
+                newOccupiedCells.insert(cell);
+            }
+            else {
+                newCell->addParticleReference(p); // insert into new cell
+               // mapParticleToNewCell.insert({p, newCell});
+               auto iterator = std::find(cell->getParticleReferences().begin(),
+                                         cell->getParticleReferences().end(),p);
+                cell->getParticleReferences().erase(iterator);
+                newOccupiedCells.insert(newCell);
+            }
         }
-        // 2. index vergleichen
-        // 3. nur wenn neuer Index, referenz löschen und neu hinzufügen
-
-
     }
+
+
+    // set to the new occupied cells
+    occupied_cells_references = newOccupiedCells; 
+    //occupied_cells_references.swap(newOccupiedCells);
 }
 
 void LinkedCellsContainer::deleteHaloParticles() {
@@ -463,53 +477,6 @@ void LinkedCellsContainer::deleteHaloParticles() {
         }
     }
 }
-/*
-void LinkedCellsContainer::applySimpleForcesDomains(const std::vector<std::shared_ptr<SimpleForceSource>> &simple_force_sources) {
-    // distribute the domains over the threads
-*//*#pragma omp parallel for schedule (static, 1)
-    for (auto& subdomain : subdomains) {
-        for (auto& cell : *subdomain.second) {
-            for (auto* p : cell->getParticleReferences()) {
-                for (const auto& force_source : simple_force_sources) {
-                    p->setF(p->getF() + force_source->calculateForce(*p));
-                }
-            }
-        }
-    }*//*
-}
-
-void LinkedCellsContainer::updatePositionSubdomain() {
-*//*#pragma omp parallel for schedule (static, 1)
-    for (auto& subdomain : subdomains) {
-        for (auto& cell : *subdomain.second) {
-            for (auto* p : cell->getParticleReferences()) {
-                const std::array<double, 3> new_x =
-                        p->getX() + delta_t * p->getV() + (delta_t * delta_t / (2 * p->getM())) * p->getF();
-                p->setX(new_x);
-                // reset forces
-                p->setOldF(p->getF());
-                p->setF({0, 0, 0});
-            }
-        }
-    }*//*
-}
-
-void LinkedCellsContainer::updateVelocitySubdomain() {
-*//*#pragma omp parallel for schedule (static, 1)
-    for (auto& subdomain : subdomains) {
-        for (auto& cell : *subdomain.second) {
-            for (auto* p : cell->getParticleReferences()) {
-                const std::array<double, 3> new_v = p->getV() + (delta_t / (2 * p->getM())) * (p->getF() + p->getOldF());
-                p->setV(new_v);
-            }
-        }
-    }*//*
-}
-
-void LinkedCellsContainer::applyPairwiseForcesDomains(
-        const std::vector<std::shared_ptr<PairwiseForceSource>> &pairwise_force_sources) {
-
-}*/
 
 std::map<unsigned int, Subdomain*> LinkedCellsContainer::getSubdomains() {
     return subdomains;

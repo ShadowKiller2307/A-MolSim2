@@ -3,6 +3,9 @@
 #include "utils/ArrayUtils.h"
 
 #include "omp.h"
+#include "particles/containers/linkedcells/boundaries/ReflectiveBoundaryType.h"
+#include "particles/containers/linkedcells/boundaries/OutflowBoundaryType.h"
+#include "particles/containers/linkedcells/boundaries/PeriodicBoundaryType.h"
 
 void VerletFunctor::step(std::unique_ptr<ParticleContainer> &particle_container,
                          const std::vector<std::shared_ptr<SimpleForceSource>> &simple_force_sources,
@@ -65,20 +68,37 @@ void VerletFunctor::templated_step(std::unique_ptr<ParticleContainer> &particle_
             subdomainsStep.at(i)->updateParticlePositions();
         }
 #pragma omp barrier
+         particle_container->prepareForceCalculation();
+         ReflectiveBoundaryType::applyBoundaryConditions(*particle_container);
+         OutflowBoundaryType::applyBoundaryConditions(particle_container);
+         PeriodicBoundaryType::applyBoundaryConditions(particle_container);
+
         // now the prepare force calculation steps
+        /* particle_container->updatePositionSubdomain();
+         particle_container->prepareForceCalculation(); // problem, here the positions will be updated, so the domains would have
+         // to exchange information
+         ReflectiveBoundaryType::applyBoundaryConditions(*this);
+       OutflowBoundaryType::applyBoundaryConditions(*this);
+    PeriodicBoundaryType::applyBoundaryConditions(*this);
+
+    // clear the already influenced by vector in the cells
+    // this is needed to prevent the two cells from affecting each other twice
+    // since newtons third law is used
+#pragma omp parallel for schedule(dynamic)
+    for (Cell* cell : domain_cell_references) {
+        cell->clearAlreadyInfluencedBy();
+    }
+
+         particle_container->applySimpleForcesDomains(simple_force_sources);
+         particle_container->applyPairwiseForcesDomains(pairwise_force_sources);
+         particle_container->updateVelocitySubdomain();*/
 
         particle_container->prepareForceCalculation();
 #pragma omp parallel for schedule(static, 1)
         for (int i = 0; i < particle_container->getSubdomains().size(); ++i) {
             subdomainsStep.at(i)->updateSubdomain();
         }
-        /* particle_container->updatePositionSubdomain();
-         particle_container->prepareForceCalculation(); // problem, here the positions will be updated, so the domains would have
-         // to exchange information
 
-         particle_container->applySimpleForcesDomains(simple_force_sources);
-         particle_container->applyPairwiseForcesDomains(pairwise_force_sources);
-         particle_container->updateVelocitySubdomain();*/
     } else if (N == 2) { // parallelization strategy 2
 
     } else { // sequentiel implementaton

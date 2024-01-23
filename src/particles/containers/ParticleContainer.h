@@ -64,14 +64,9 @@ class ParticleContainer {
      */
     virtual void applyPairwiseForces(const std::vector<std::shared_ptr<PairwiseForceSource>>& pairwise_force_sources) = 0;
 
-  /*  virtual void applyPairwiseForcesDomains(const std::vector<std::shared_ptr<PairwiseForceSource>>& pairwise_force_sources) = 0;
-
-    virtual void applySimpleForcesDomains(const std::vector<std::shared_ptr<SimpleForceSource>>& simple_force_sources) = 0;
-
-    virtual void updatePositionSubdomain() = 0;
-
-    virtual void updateVelocitySubdomain() = 0;*/
-
+    /**
+     * @brief return the subdomains belonging to the container for the first parallelization strategy
+     */
     virtual std::map<unsigned int, Subdomain*> getSubdomains() = 0;
 
     /**

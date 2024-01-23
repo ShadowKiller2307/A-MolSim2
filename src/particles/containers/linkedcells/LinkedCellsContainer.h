@@ -84,14 +84,6 @@ class LinkedCellsContainer : public ParticleContainer {
      */
     void applySimpleForces(const std::vector<std::shared_ptr<SimpleForceSource>>& simple_force_sources) override;
 
-   /* virtual void applySimpleForcesDomains(const std::vector<std::shared_ptr<SimpleForceSource>>& simple_force_sources) = 0;
-
-    void applyPairwiseForcesDomains(const std::vector<std::shared_ptr<PairwiseForceSource>>& pairwise_force_sources) override;
-
-    void updatePositionSubdomain() override;
-
-    void updateVelocitySubdomain() override;*/
-
     /**
      * @brief Applies the given force sources to the particles
      *

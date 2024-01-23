@@ -157,9 +157,7 @@ class DirectSumContainer : public ParticleContainer {
      * Uses newton's third law to calculate the forces between the particles in a more optimized way.
      */
     void applyPairwiseForces(const std::vector<std::shared_ptr<PairwiseForceSource>>& pairwise_force_sources) override;
-    /*void applySimpleForcesDomains(const std::vector<std::shared_ptr<SimpleForceSource>>& simple_force_sources) override;
-    void updatePositionSubdomain() override;
-    void updateVelocitySubdomain() override;*/
+
     [[nodiscard]] const std::array<double, 3>& getDomainSize() const override;
 
     std::map<unsigned int, Subdomain*> getSubdomains() override;
