@@ -1,16 +1,7 @@
 #include "Subdomain.h"
-#include <omp.h>
-#include "utils/ArrayUtils.h"
 
-
-
-Subdomain::Subdomain(double delta_t, double gravityConstant) : delta_t{delta_t}, gravityConstant{gravityConstant} {
+Subdomain::Subdomain(double delta_t, double gravityConstant, double cutOffRadius) : delta_t{delta_t}, gravityConstant{gravityConstant}, cutoffRadius{cutOffRadius} {
     subdomainCells = {};
-  /*  auto amountThreads = numThreads; //omp_get_num_threads();
-    auto amountSubdomains = 10; // TODO: berechnen
-    for (int i = 0; i < ; ++i) {
-
-    }*/
 }
 
 //void Subdomain::initializeSubdomains() {}
@@ -18,35 +9,19 @@ void Subdomain::addCell(Cell* cellToAdd) {
     subdomainCells.emplace(cellToAdd);
 }
 
-void Subdomain::updateSubdomain() {
+void Subdomain::updateSubdomain(const std::vector<std::shared_ptr<PairwiseForceSource>>& force_sources) {
     //apply simple forces
     for (auto& cell : subdomainCells) {
-        //first update position
-        for (auto *particle: cell->getParticleReferences()) {
-            const std::array<double, 3> new_v = particle->getV() + (delta_t / (2 * particle->getM())) * (particle->getF() + particle->getOldF());
-            particle->setV(new_v);
+        for (auto* particle : cell->getParticleReferences()) { //directly apply gravitational
+            //force here for performance
+            auto currentF = particle->getF();
+            currentF[1] += particle->getM() * (-gravityConstant);
+            particle->setF(currentF);
         }
     }
     // apply pairwise forces
-
-
-
-    // //TODO: port this to subdomains
-    /*
-    ReflectiveBoundaryType::applyBoundaryConditions(*this);
-    OutflowBoundaryType::applyBoundaryConditions(*this);
-    PeriodicBoundaryType::applyBoundaryConditions(*this);
-
-    // clear the already influenced by vector in the cells
-    // this is needed to prevent the two cells from affecting each other twice
-    // since newtons third law is used
-#pragma omp parallel for schedule(dynamic)
-    for (Cell* cell : domain_cell_references) {
-        cell->clearAlreadyInfluencedBy();
-    }
-
-    //#pragma omp parallel for schedule(dynamic)
-    for (Cell* cell : occupied_cells_references) {
+    //TODO: maybe domain occupied_cell_references
+    for (Cell* cell : subdomainCells) {
         // skip halo cells
         // if (cell->getCellType() == Cell::CellType::HALO) continue;
 
@@ -57,7 +32,7 @@ void Subdomain::updateSubdomain() {
             for (auto it2 = (it1 + 1); it2 != cell->getParticleReferences().end(); ++it2) {
                 Particle* q = *it2;
                 std::array<double, 3> total_force{0, 0, 0};
-                for (auto& force : force_sources) {
+                for (auto& force : force_sources) {  //maybe inline function for the force ?
                     total_force = total_force + force->calculateForce(*p, *q);
                 }
                 p->setF(p->getF() + total_force);
@@ -65,31 +40,29 @@ void Subdomain::updateSubdomain() {
             }
 
             // calculate the forces between the particle and the particles in the neighbour cells
+            //TODO: what to do if the neighbour cell is in a different subdomain?
+            // -> is the already influenced by vector the best option?
+            
             for (Cell* neighbour : cell->getNeighbourReferences()) {
                 if (cell->getAlreadyInfluencedBy().contains(neighbour)) continue;
 
-                for (Particle* neighbour_particle : neighbour->getParticleReferences()) {
-                    if (ArrayUtils::L2Norm(p->getX() - neighbour_particle->getX()) > cutoff_radius) continue;
+                /*for (Particle* neighbour_particle : neighbour->getParticleReferences()) {
+                    if (ArrayUtils::L2Norm(p->getX() - neighbour_particle->getX()) > cutoffRadius) continue;
 
                     for (const auto& force_source : force_sources) {
                         std::array<double, 3> force = force_source->calculateForce(*p, *neighbour_particle);
                         p->setF(p->getF() + force);
                         neighbour_particle->setF(neighbour_particle->getF() - force);
+                        // for cells at the border of subdomains maybe disable Newtons 3rd law
+                        // or maybe lock the cells
                     }
                 }
 
                 neighbour->addAlreadyInfluencedBy(cell); // this should be a loop carried dependency
-            }
+            }*/
         }
     }
-
-    // remove the periodic halo particles
-    deleteHaloParticles();
-    updateCellsParticleReferences();*/
-
-
-
-    //upddate velocities
+    //update velocities
     for (auto& cell : subdomainCells) {
         //first update position
         for (auto *particle: cell->getParticleReferences()) {

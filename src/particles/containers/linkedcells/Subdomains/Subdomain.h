@@ -2,12 +2,17 @@
 #include <omp.h>
 #include <set>
 #include "particles/containers/linkedcells/cells/Cell.h"
+#include <omp.h>
+#include <memory>
+#include "utils/ArrayUtils.h"
+#include "physics/pairwiseforces/PairwiseForceSource.h"
+
 
 // class for the subdomains, which are part of parallelization strategy 1
 //template<unsigned N>
 class Subdomain{
 public:
-    Subdomain(double delta_t, double gravityConstant);
+    Subdomain(double delta_t, double gravityConstant, double cutoffRadius);
     /**
      * @brief: based on the number of threads subdomains are intialized which consist of multiple cells
      */
@@ -24,12 +29,13 @@ public:
    * -> apply pairwise forces
    * -> update the velocity
    */
-  void updateSubdomain();
+  void updateSubdomain(const std::vector<std::shared_ptr<PairwiseForceSource>>& force_sources);
 
 private:
     std::set<Cell*> subdomainCells; // a set of the subdomains
     double delta_t;
     double gravityConstant;
+    double cutoffRadius;
   /*  std::array<double, 3> domainSize;
     std::array<unsigned, 3> cellsPerDimension;
     double cutoffRadius;

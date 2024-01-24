@@ -34,6 +34,15 @@ class Cell {
     std::vector<Cell*> neighbour_references;
 
     /**
+     * @brief the indices of the neighbours with which
+     * the forces remain to be calculated in
+     * respect to Newtons 3rd law
+     */
+    std::unordered_set<int> neighboursToComputeForcesWith;
+
+
+
+    /**
      * @brief References to the cells that have already influenced this cell
      */
     std::unordered_set<Cell*> already_influenced_by;
@@ -104,4 +113,6 @@ class Cell {
      * @brief Removes all cell references from the set of cells that have already influenced this cell
      */
     void clearAlreadyInfluencedBy();
+
+    void addToNeighboursToComputeForcesWith(int index);
 };

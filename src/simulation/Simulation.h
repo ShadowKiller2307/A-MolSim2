@@ -39,6 +39,8 @@ class Simulation {
      *
      * @return SimulationOverview object containing some data about the simulation performed
      */
+     //TODO: the templated function should be in the parent class, but what to do as
+     // params will only be instantiated at runtime
     template<unsigned N>
     SimulationOverview runSimulation() {
         size_t iteration = 0;

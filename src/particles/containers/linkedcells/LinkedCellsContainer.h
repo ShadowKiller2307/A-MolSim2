@@ -217,6 +217,8 @@ class LinkedCellsContainer : public ParticleContainer {
      */
     int cellCoordToCellIndex(int cx, int cy, int cz) const;
 
+    int findCellForParticle(const std::array<double, 3>& pos);
+
     /**
      * @brief Maps the particle position to the corresponding cell index in the internal cell vector
      *

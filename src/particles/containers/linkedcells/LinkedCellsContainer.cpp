@@ -229,6 +229,14 @@ int LinkedCellsContainer::cellCoordToCellIndex(int cx, int cy, int cz) const {
     return (cx + 1) * (domain_num_cells[1] + 2) * (domain_num_cells[2] + 2) + (cy + 1) * (domain_num_cells[2] + 2) + (cz + 1);
 }
 
+int LinkedCellsContainer::findCellForParticle(const std::array<double, 3>& pos) {
+    int cx = static_cast<int>(std::floor(pos[0] / cell_size[0]));
+    int cy = static_cast<int>(std::floor(pos[1] / cell_size[1]));
+    int cz = static_cast<int>(std::floor(pos[2] / cell_size[2]));
+
+    return cellCoordToCellIndex(cx, cy, cz);
+}
+
 Cell* LinkedCellsContainer::particlePosToCell(const std::array<double, 3>& pos) { return particlePosToCell(pos[0], pos[1], pos[2]); }
 
 Cell* LinkedCellsContainer::particlePosToCell(double x, double y, double z) {
@@ -386,6 +394,9 @@ void LinkedCellsContainer::initSubdomains() {
 }
 
 void LinkedCellsContainer::initCellNeighbourReferences() {
+    /*
+     * addition: add the computeForcesWithIndices indices
+     */
     // Loop through each cell according to their cell coordinates
     for (int cx = -1; cx < domain_num_cells[0] + 1; ++cx) {
         for (int cy = -1; cy < domain_num_cells[1] + 1; ++cy) {
@@ -406,6 +417,12 @@ void LinkedCellsContainer::initCellNeighbourReferences() {
                             if (cell_index == -1) continue;
 
                             // Add the neighbour to the current cells neighbour references
+                            // in a 3 dimensional container, the indices with which
+                            // the force should be calculated are added, whic
+                            if (dz == 1 || (dx == 1 && dy == 0) || (dx == 1 && dy == 1) || (dx == 0 && dy == 1)
+                            || (dx == -1 && dy == 1)) {
+
+                            }
                             Cell& curr_neighbour = cells.at(cell_index);
                             cell.addNeighbourReference(&curr_neighbour);
                         }
@@ -418,8 +435,35 @@ void LinkedCellsContainer::initCellNeighbourReferences() {
 
 //TODO: maybe that can be optimized, as every cell is cleared in every iteration
 void LinkedCellsContainer::updateCellsParticleReferences() {
+     std::unordered_set<Cell*> newOccupiedCells;
+    //std::unordered_map<Particle*,Cell*> mapParticleToNewCell;
+    //occupied_cells_references.clear();
+
+    for(Cell* cell:occupied_cells_references){
+        for(Particle* p:cell->getParticleReferences()){
+            Cell* newCell = particlePosToCell(p->getX()); // new index
+            if (newCell == cell) {
+                newOccupiedCells.insert(cell);
+            }
+            else {
+                newCell->addParticleReference(p); // insert into new cell
+                // mapParticleToNewCell.insert({p, newCell});
+                auto iterator = std::find(cell->getParticleReferences().begin(),
+                                          cell->getParticleReferences().end(),p);
+                cell->getParticleReferences().erase(iterator);
+                newOccupiedCells.insert(newCell);
+            }
+        }
+    }
+
+
+    // set to the new occupied cells
+    occupied_cells_references = newOccupiedCells;
+    //occupied_cells_references.swap(newOccupiedCells);
+
+
     // clear the particle references in the cells
-    for (Cell& cell : cells) {
+   /* for (Cell& cell : cells) {
         cell.clearParticleReferences();
     }
 
@@ -432,7 +476,7 @@ void LinkedCellsContainer::updateCellsParticleReferences() {
 
         occupied_cells_references.insert(cell);
         cell->addParticleReference(&p);
-    }
+    }*/
 }
 /*
  * for(cell : cells)

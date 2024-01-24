@@ -22,3 +22,7 @@ void Cell::addNeighbourReference(Cell* c) { neighbour_references.push_back(c); }
 void Cell::addAlreadyInfluencedBy(Cell* c) { already_influenced_by.insert(c); }
 
 void Cell::clearAlreadyInfluencedBy() { already_influenced_by.clear(); }
+
+void Cell::addToNeighboursToComputeForcesWith(int index) {
+    neighboursToComputeForcesWith.emplace(index);
+}
