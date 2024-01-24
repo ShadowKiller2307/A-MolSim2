@@ -351,7 +351,7 @@ std::array<unsigned , 3> computeSubdomainsPerDimension() {
             return {7, 4, 1};
         case 56:
             return {8, 7, 1};
-        
+
     }
 }
 
@@ -369,7 +369,7 @@ void LinkedCellsContainer::initSubdomains() {
     for (int i = 0; i < subdomainsPerDimension[0]; ++i) {
         for (int j = 0; j < subdomainsPerDimension[1]; ++j) {
             for (int k = 0; k < subdomainsPerDimension[2]; ++k) {
-                subdomains.emplace(i, new Subdomain(delta_t, gravityConstant));
+                subdomains.emplace(i, new Subdomain(delta_t, gravityConstant, cutoff_radius, std::make_unique<LinkedCellsContainer>(*this))); //std::unique_ptr<LinkedCellsContainer>(this)));
                 for (int l = 0; l < cellsPerSubdomainX; ++l) {
                     for (int m = 0; m < cellsPerSubdomainY; ++m) {
                         for (int n = 0; n < cellsPerSubdomainZ; ++n) {
@@ -417,11 +417,17 @@ void LinkedCellsContainer::initCellNeighbourReferences() {
                             if (cell_index == -1) continue;
 
                             // Add the neighbour to the current cells neighbour references
-                            // in a 3 dimensional container, the indices with which
-                            // the force should be calculated are added, whic
+                            // add to the current cell the indices of the neighbours which are
+                            /*
+                             *  add    add     add
+                             *         cell    add
+                             *
+                             * + behind the cell (dz == 1)
+                             * (needed for the subdomain parallization strategy)
+                             */
                             if (dz == 1 || (dx == 1 && dy == 0) || (dx == 1 && dy == 1) || (dx == 0 && dy == 1)
                             || (dx == -1 && dy == 1)) {
-
+                                cell.addToNeighboursToComputeForcesWith(cell_index);
                             }
                             Cell& curr_neighbour = cells.at(cell_index);
                             cell.addNeighbourReference(&curr_neighbour);
@@ -433,7 +439,6 @@ void LinkedCellsContainer::initCellNeighbourReferences() {
     }
 }
 
-//TODO: maybe that can be optimized, as every cell is cleared in every iteration
 void LinkedCellsContainer::updateCellsParticleReferences() {
      std::unordered_set<Cell*> newOccupiedCells;
     //std::unordered_map<Particle*,Cell*> mapParticleToNewCell;
@@ -510,7 +515,7 @@ void LinkedCellsContainer::updateCellsParticleReferencesOptimized() {
 
 
     // set to the new occupied cells
-    occupied_cells_references = newOccupiedCells; 
+    occupied_cells_references = newOccupiedCells;
     //occupied_cells_references.swap(newOccupiedCells);
 }
 

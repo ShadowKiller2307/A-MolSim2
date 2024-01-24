@@ -61,6 +61,8 @@ class LinkedCellsContainer : public ParticleContainer {
      */
     void addParticle(const Particle& p) override;
 
+    int findCellForParticle(const std::array<double, 3>& pos);
+
     /**
      * @brief Adds a particle to the container
      *
@@ -216,8 +218,6 @@ class LinkedCellsContainer : public ParticleContainer {
      * @return index of the cell if it exists, -1 otherwise
      */
     int cellCoordToCellIndex(int cx, int cy, int cz) const;
-
-    int findCellForParticle(const std::array<double, 3>& pos);
 
     /**
      * @brief Maps the particle position to the corresponding cell index in the internal cell vector

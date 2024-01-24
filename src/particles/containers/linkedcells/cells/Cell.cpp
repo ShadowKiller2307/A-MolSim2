@@ -3,6 +3,7 @@
 Cell::Cell(CellType cell_type) : cell_type(cell_type) {
     neighbour_references.reserve(26);
     already_influenced_by.reserve(16);
+    omp_init_lock(&cellLock);
 }
 
 Cell::CellType Cell::getCellType() const { return cell_type; }
@@ -23,6 +24,23 @@ void Cell::addAlreadyInfluencedBy(Cell* c) { already_influenced_by.insert(c); }
 
 void Cell::clearAlreadyInfluencedBy() { already_influenced_by.clear(); }
 
-void Cell::addToNeighboursToComputeForcesWith(int index) {
-    neighboursToComputeForcesWith.emplace(index);
+void Cell::addToNeighboursToComputeForcesWith(Cell* cell) {
+    neighboursToComputeForcesWith.emplace(cell);
+}
+
+std::unordered_set<Cell*> Cell::getNeighboursToComputeForcesWith() {
+    return neighboursToComputeForcesWith;
+}
+
+Cell::~Cell() {
+    omp_destroy_lock(&cellLock);
+}
+
+omp_lock_t* Cell::getLock() {
+    return &cellLock;
+}
+
+void Cell::calculateForcesBetweenCells(Cell *other) {
+
+
 }

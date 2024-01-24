@@ -7,12 +7,13 @@
 #include "utils/ArrayUtils.h"
 #include "physics/pairwiseforces/PairwiseForceSource.h"
 
-
 // class for the subdomains, which are part of parallelization strategy 1
 //template<unsigned N>
+class LinkedCellsContainer;
+
 class Subdomain{
 public:
-    Subdomain(double delta_t, double gravityConstant, double cutoffRadius);
+    Subdomain(double delta_t, double gravityConstant, double cutoffRadius, std::unique_ptr<LinkedCellsContainer>);
     /**
      * @brief: based on the number of threads subdomains are intialized which consist of multiple cells
      */
@@ -31,11 +32,14 @@ public:
    */
   void updateSubdomain(const std::vector<std::shared_ptr<PairwiseForceSource>>& force_sources);
 
+  void calculateForcesBetweenCells(Cell* one, Cell* two);
+
 private:
     std::set<Cell*> subdomainCells; // a set of the subdomains
     double delta_t;
     double gravityConstant;
     double cutoffRadius;
+    std::unique_ptr<LinkedCellsContainer> linkedCellsContainer;
   /*  std::array<double, 3> domainSize;
     std::array<unsigned, 3> cellsPerDimension;
     double cutoffRadius;

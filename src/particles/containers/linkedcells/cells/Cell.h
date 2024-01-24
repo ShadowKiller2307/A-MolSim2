@@ -4,6 +4,7 @@
 #include <optional>
 #include <unordered_set>
 #include <vector>
+#include <omp.h>
 
 #include "particles/Particle.h"
 
@@ -38,14 +39,18 @@ class Cell {
      * the forces remain to be calculated in
      * respect to Newtons 3rd law
      */
-    std::unordered_set<int> neighboursToComputeForcesWith;
-
-
+    std::unordered_set<Cell*> neighboursToComputeForcesWith;
 
     /**
      * @brief References to the cells that have already influenced this cell
      */
     std::unordered_set<Cell*> already_influenced_by;
+
+    /**
+     * @brief a lock for accessing the cells, needed for the parallelization strategies in order
+     * to avoid race conflicts
+     */
+     omp_lock_t cellLock;
 
    public:
     /**
@@ -54,6 +59,12 @@ class Cell {
      * @param cell_type Type of the cell
      */
     explicit Cell(CellType cell_type);
+
+    /**
+     * @brief custom constructor, needed as the lock needs
+     * to be destroyed when the cells is destroyed
+     */
+    ~Cell();
 
     /**
      * @brief Get the type of the cell
@@ -114,5 +125,11 @@ class Cell {
      */
     void clearAlreadyInfluencedBy();
 
-    void addToNeighboursToComputeForcesWith(int index);
+    void addToNeighboursToComputeForcesWith(Cell* cell);
+
+    std::unordered_set<Cell*> getNeighboursToComputeForcesWith();
+
+    omp_lock_t* getLock();
+
+    void calculateForcesBetweenCells(Cell* other);
 };
