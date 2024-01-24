@@ -18,7 +18,7 @@ public:
      * @brief: based on the number of threads subdomains are intialized which consist of multiple cells
      */
   //  void initializeSubdomains();
-  void addCell(Cell* cellToAdd);
+  void addCell(bool isAtSubdomainBorder, Cell* cellToAdd);
 
   /**
    * @brief updates the particle positions within the current domain
@@ -35,7 +35,12 @@ public:
   void calculateForcesBetweenCells(Cell* one, Cell* two);
 
 private:
-    std::set<Cell*> subdomainCells; // a set of the subdomains
+    /**
+     * @brief: the pair consists of:
+     * bool: is the cell located at the subdomain border
+     * Cell*: pointer to the cell belonging to the subdomain
+     */
+    std::set<std::pair<bool, Cell*>> subdomainCells; // a set of the subdomains
     double delta_t;
     double gravityConstant;
     double cutoffRadius;

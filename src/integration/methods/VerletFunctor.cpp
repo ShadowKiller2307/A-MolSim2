@@ -22,10 +22,6 @@ void VerletFunctor::step(std::unique_ptr<ParticleContainer> &particle_container,
         p.setF({0, 0, 0});
     }
 
-    /*
-     * iteration over cells and give the cells
-     */
-
     // calculate new forces
     particle_container->prepareForceCalculation();
     particle_container->applySimpleForces(simple_force_sources);
@@ -49,14 +45,6 @@ void VerletFunctor::templated_step(std::unique_ptr<ParticleContainer> &particle_
         /*for (auto &subdomain : particle_container->) {
 
         }*/
-        // TODO: maybe I can split it up into subdomains already here
-        /*
-         * for(subdomain: subdomains)
-         *   subdomain.updatePositionSubdomain
-         *   prepareForceCalculationSubdomain
-         *
-         *
-         */
         auto numDomains = 10;
         std::map<unsigned int, Subdomain *> subdomainsStep = particle_container->getSubdomains();
         // update die positions
@@ -64,44 +52,29 @@ void VerletFunctor::templated_step(std::unique_ptr<ParticleContainer> &particle_
         // dann update den rest so gut es geht
 
 #pragma omp parallel for schedule(static, 1)
+//TODO: maybe tasks are better here
         for (int i = 0; i < particle_container->getSubdomains().size(); ++i) {
             subdomainsStep.at(i)->updateParticlePositions();
         }
 #pragma omp barrier
+#pragma omp parallel for schedule(static, 1)
          particle_container->prepareForceCalculation();
+
          ReflectiveBoundaryType::applyBoundaryConditions(*particle_container);
          OutflowBoundaryType::applyBoundaryConditions(particle_container);
          PeriodicBoundaryType::applyBoundaryConditions(particle_container);
-
-        // now the prepare force calculation steps
-        /* particle_container->updatePositionSubdomain();
-         particle_container->prepareForceCalculation(); // problem, here the positions will be updated, so the domains would have
-         // to exchange information
-         ReflectiveBoundaryType::applyBoundaryConditions(*this);
-       OutflowBoundaryType::applyBoundaryConditions(*this);
-    PeriodicBoundaryType::applyBoundaryConditions(*this);
-
-    // clear the already influenced by vector in the cells
-    // this is needed to prevent the two cells from affecting each other twice
-    // since newtons third law is used
-#pragma omp parallel for schedule(dynamic)
-    for (Cell* cell : domain_cell_references) {
-        cell->clearAlreadyInfluencedBy();
-    }
-
-         particle_container->applySimpleForcesDomains(simple_force_sources);
-         particle_container->applyPairwiseForcesDomains(pairwise_force_sources);
-         particle_container->updateVelocitySubdomain();*/
-
-        particle_container->prepareForceCalculation();
 #pragma omp parallel for schedule(static, 1)
+#pragma omp single
+         //TODO: only one thread apply the boundary conditions
+
         for (int i = 0; i < particle_container->getSubdomains().size(); ++i) {
-            subdomainsStep.at(i)->updateSubdomain();
+            subdomainsStep.at(i)->updateSubdomain(pairwise_force_sources);
         }
 
     } else if (N == 2) { // parallelization strategy 2
 
-    } else { // sequentiel implementaton
+    } else { // sequentiel implementaton, maybe call the sequential implementation only
+        // if the old step method is called and not the templated step
 
     }
 }

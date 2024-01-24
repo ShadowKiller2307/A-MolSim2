@@ -316,6 +316,7 @@ class LinkedCellsContainer : public ParticleContainer {
 
     /**
      * @brief Number of cells in each dimension
+     * doesn't include the halo cells
      */
     std::array<int, 3> domain_num_cells;
 
