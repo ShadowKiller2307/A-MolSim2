@@ -38,6 +38,9 @@ public:
      */
     void logSummary(int depth) const override;
 
+    void setTestMode(bool mode);
+
+    [[nodiscard]] std::vector<double> getVariancesForTestMode() const;
 
 
 private:
@@ -45,6 +48,9 @@ private:
 
     ///@brief Each time the operator is called the particle positions used in the calculations become the previous references
     std::vector<std::array<double,3>> previous_references;
+
+    bool test_mode;
+    std::vector<double> variances_for_test_mode;
 
 
 

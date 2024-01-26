@@ -8,6 +8,7 @@ void DiffusionInterceptor::onSimulationStart(Simulation &simulation) {
     csv_writer = std::make_unique<CSVWriter>(simulation.params.output_dir_path / "diffusion.csv");
     csv_writer->initialize({"iteration","variance"});
     every_nth_iteration = 1000;
+    test_mode = false;
 
     for(auto& pos:simulation.initial_pos_of_particles){
         previous_references.push_back(pos);
@@ -37,6 +38,9 @@ void DiffusionInterceptor::operator()(size_t iteration, Simulation& simulation) 
 
     }
     var = coefficient*sum;
+    if(test_mode){
+        variances_for_test_mode.push_back(var);
+    }
 
     csv_writer->writeRow({iteration,var});
 
@@ -52,6 +56,15 @@ void DiffusionInterceptor::logSummary(int depth) const {
     std::string indent = std::string(depth * 2, ' ');
 
     Logger::logger->info("{}╟┤{}Diffusion: {}", indent, ansi_orange_bold, ansi_end);
+}
+
+void DiffusionInterceptor::setTestMode(bool mode) {
+    test_mode = mode;
+    variances_for_test_mode = std::vector<double>();
+}
+
+std::vector<double> DiffusionInterceptor::getVariancesForTestMode() const {
+    return variances_for_test_mode;
 }
 
 
