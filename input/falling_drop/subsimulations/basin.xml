@@ -46,6 +46,7 @@
                 <y>50</y>
                 <z>1</z>
             </grid_dim>
+            <is_membrane>false</is_membrane>
             <grid_spacing>1.2</grid_spacing>
             <temperature>0.5</temperature>
             <mass>1</mass>
