@@ -37,6 +37,7 @@ Particle::Particle(std::array<double, 3> x_arg, std::array<double, 3> v_arg, dou
     sigma = sigma_arg;
     type = type_arg;
     old_f = {0., 0., 0.};
+    omp_init_lock(&particleLock);
     std::fill(neighbors.begin(), neighbors.end(), nullptr);
     Logger::logger->debug("Particle created");
 }
@@ -52,6 +53,7 @@ Particle::Particle(std::array<double, 3> x_arg, std::array<double, 3> v_arg, std
     type = type_arg;
     epsilon = epsilon_arg;
     sigma = sigma_arg;
+    omp_init_lock(&particleLock); //TODO I think i have to destroy that lock somewhere
     std::fill(neighbors.begin(), neighbors.end(), nullptr);
     Logger::logger->debug("Particle created");
 }

@@ -78,6 +78,7 @@ void Subdomain::updateSubdomain(const std::vector<std::shared_ptr<PairwiseForceS
         if (cell.first) {
             omp_unset_lock(cell.second->getLock());
         }
+
     }
     //update velocities
     for (auto &cell: subdomainCells) {

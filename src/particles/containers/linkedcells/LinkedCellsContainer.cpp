@@ -100,10 +100,10 @@ void LinkedCellsContainer::addParticle(Particle &&p) {
 void LinkedCellsContainer::prepareForceCalculation() {
     // update the particle references in the cells in case the particles have moved
     updateCellsParticleReferences();
-    //TODO maybe parallelize
-    ReflectiveBoundaryType::pre(*this);
-    OutflowBoundaryType::pre(*this);
-    PeriodicBoundaryType::pre(*this);
+
+    //ReflectiveBoundaryType::pre(*this); //does nothing
+    OutflowBoundaryType::pre(*this);   // deletes the halo cells
+    PeriodicBoundaryType::pre(*this);  // moves the particles which left the domain to the other side
 
     // update the particle references in the cells in case the particles have moved
     updateCellsParticleReferences();
@@ -132,270 +132,364 @@ LinkedCellsContainer::applySimpleForces(const std::vector<std::shared_ptr<Simple
 }
 
 void LinkedCellsContainer::applyPairwiseForces(const std::vector<std::shared_ptr<PairwiseForceSource>> &force_sources) {
-    ReflectiveBoundaryType::applyBoundaryConditions(*this);
-    OutflowBoundaryType::applyBoundaryConditions(*this);
-    PeriodicBoundaryType::applyBoundaryConditions(*this);
-
-    // clear the already influenced by vector in the cells
-    // this is needed to prevent the two cells from affecting each other twice
-    // since newtons third law is used
-    for (Cell *cell: domain_cell_references) {
-        cell->clearAlreadyInfluencedBy();
-    }
-
-    //#pragma omp parallel for schedule(dynamic)
+    /// optimize this for the particle parallelization strategy
+#ifdef PARTICLES
     for (Cell *cell: occupied_cells_references) {
         // skip halo cells
         // if (cell->getCellType() == Cell::CellType::HALO) continue;
 
-        for (auto it1 = cell->getParticleReferences().begin(); it1 != cell->getParticleReferences().end(); ++it1) {
-            Particle *p = *it1;
-            // calculate the forces between the particle and the particles in the same cell
-            // uses direct sum with newtons third law
-            for (auto it2 = (it1 + 1); it2 != cell->getParticleReferences().end(); ++it2) {
-                Particle *q = *it2;
-                std::array<double, 3> total_force{0, 0, 0};
-                for (auto &force: force_sources) {
-                    total_force = total_force + force->calculateForce(*p, *q);
-                }
-                p->setF(p->getF() + total_force);
-                q->setF(q->getF() - total_force);
-            }
+#pragma omp parallel
+        {
+            // for one particle, forces with the particles in the same cell and
+            // in the neighbour cells have to be calculated
+            size_t amountOfParticles = cell->getParticleReferences().size();
 
-            // calculate the forces between the particle and the particles in the neighbour cells
-            for (Cell *neighbour: cell->getNeighbourReferences()) {
-                if (cell->getAlreadyInfluencedBy().contains(neighbour)) continue;
-
-                for (Particle *neighbour_particle: neighbour->getParticleReferences()) {
-                    if (ArrayUtils::L2Norm(p->getX() - neighbour_particle->getX()) > cutoff_radius) continue;
-
-                    for (const auto &force_source: force_sources) {
-                        std::array<double, 3> force = force_source->calculateForce(*p, *neighbour_particle);
-                        p->setF(p->getF() + force);
-                        neighbour_particle->setF(neighbour_particle->getF() - force);
+#pragma omp for
+            /// at the moment, the particles get locked
+            for (size_t i = 0; i < amountOfParticles; ++i) {
+                Particle *p = cell->getParticleReferences().at(i);
+                for (size_t j = 0; j < amountOfParticles; ++j) {
+                    Particle *q = cell->getParticleReferences().at(j);
+                    std::array<double, 3> total_force{0, 0, 0};
+                    for (auto &force: force_sources) {
+                        total_force = total_force + force->calculateForce(*p, *q);
                     }
+                    omp_set_lock(p->getLock());
+                    p->setF(p->getF() + total_force);
+                    omp_unset_lock(p->getLock());
+                    omp_set_lock(q->getLock());
+                    q->setF(q->getF() - total_force);
+                    omp_unset_lock(q->getLock());
+                }
+                for (Cell *neighbour: cell->getNeighboursToComputeForcesWith()) {
+
+                    for (Particle *neighbour_particle: neighbour->getParticleReferences()) {
+                        if (ArrayUtils::L2Norm(p->getX() - neighbour_particle->getX()) > cutoff_radius) continue;
+
+                        for (const auto &force_source: force_sources) {
+                            std::array<double, 3> force = force_source->calculateForce(*p, *neighbour_particle);
+                            omp_set_lock(p->getLock());
+                            p->setF(p->getF() + force);
+                            omp_unset_lock(p->getLock());
+                            omp_set_lock(neighbour_particle->getLock());
+                            neighbour_particle->setF(neighbour_particle->getF() - force);
+                            omp_unset_lock(neighbour_particle->getLock());
+                        }
+                    }
+
+                    neighbour->addAlreadyInfluencedBy(cell); // this should be a loop carried dependency
+                }
+            }
+
+
+            for (auto it1 = cell->getParticleReferences().begin();
+                 it1 != cell->getParticleReferences().end(); ++it1) {
+                Particle *p = *it1;
+                // calculate the forces between the particle and the particles in the same cell
+                // uses direct sum with newtons third law
+                for (auto it2 = (it1 + 1); it2 != cell->getParticleReferences().end(); ++it2) {
+                    Particle *q = *it2;
+                    std::array<double, 3> total_force{0, 0, 0};
+                    for (auto &force: force_sources) {
+                        total_force = total_force + force->calculateForce(*p, *q);
+                    }
+                    p->setF(p->getF() + total_force);
+                    q->setF(q->getF() - total_force);
                 }
 
-                neighbour->addAlreadyInfluencedBy(cell); // this should be a loop carried dependency
+                // calculate the forces between the particle and the particles in the neighbour cells
+                for (Cell *neighbour: cell->getNeighbourReferences()) {
+                    if (cell->getAlreadyInfluencedBy().contains(neighbour)) continue;
+
+                    for (Particle *neighbour_particle: neighbour->getParticleReferences()) {
+                        if (ArrayUtils::L2Norm(p->getX() - neighbour_particle->getX()) > cutoff_radius) continue;
+
+                        for (const auto &force_source: force_sources) {
+                            std::array<double, 3> force = force_source->calculateForce(*p, *neighbour_particle);
+                            p->setF(p->getF() + force);
+                            neighbour_particle->setF(neighbour_particle->getF() - force);
+                        }
+                    }
+
+                    neighbour->addAlreadyInfluencedBy(cell); // this should be a loop carried dependency
+                }
             }
+        }
+        deleteHaloParticles();
+        updateCellsParticleReferences();
+    }
+#else
+        ReflectiveBoundaryType::applyBoundaryConditions(*this);
+        OutflowBoundaryType::applyBoundaryConditions(*this);
+        PeriodicBoundaryType::applyBoundaryConditions(*this);
+
+        //for (Cell *cell: occupied_cells_references) {
+
+
+
+
+        // clear the already influenced by vector in the cells
+        // this is needed to prevent the two cells from affecting each other twice
+        // since newtons third law is used
+        for (Cell *cell: domain_cell_references) {
+            cell->clearAlreadyInfluencedBy();
+        }
+
+        //#pragma omp parallel for schedule(dynamic)
+        for (Cell *cell: occupied_cells_references) {
+            // skip halo cells
+            // if (cell->getCellType() == Cell::CellType::HALO) continue;
+
+            for (auto it1 = cell->getParticleReferences().begin(); it1 != cell->getParticleReferences().end(); ++it1) {
+                Particle *p = *it1;
+                // calculate the forces between the particle and the particles in the same cell
+                // uses direct sum with newtons third law
+                for (auto it2 = (it1 + 1); it2 != cell->getParticleReferences().end(); ++it2) {
+                    Particle *q = *it2;
+                    std::array<double, 3> total_force{0, 0, 0};
+                    for (auto &force: force_sources) {
+                        total_force = total_force + force->calculateForce(*p, *q);
+                    }
+                    p->setF(p->getF() + total_force);
+                    q->setF(q->getF() - total_force);
+                }
+
+                // calculate the forces between the particle and the particles in the neighbour cells
+                for (Cell *neighbour: cell->getNeighbourReferences()) {
+                    if (cell->getAlreadyInfluencedBy().contains(neighbour)) continue;
+
+                    for (Particle *neighbour_particle: neighbour->getParticleReferences()) {
+                        if (ArrayUtils::L2Norm(p->getX() - neighbour_particle->getX()) > cutoff_radius) continue;
+
+                        for (const auto &force_source: force_sources) {
+                            std::array<double, 3> force = force_source->calculateForce(*p, *neighbour_particle);
+                            p->setF(p->getF() + force);
+                            neighbour_particle->setF(neighbour_particle->getF() - force);
+                        }
+                    }
+
+                    neighbour->addAlreadyInfluencedBy(cell); // this should be a loop carried dependency
+                }
+            }
+        }
+
+        // remove the periodic halo particles
+        deleteHaloParticles();
+        updateCellsParticleReferences();
+#endif
+    }
+
+    void LinkedCellsContainer::reserve(size_t n) {
+        Logger::logger->debug("Reserving space for {} particles", n);
+
+        size_t old_capacity = particles.capacity();
+        particles.reserve(n);
+
+        if (old_capacity != particles.capacity()) {
+            updateCellsParticleReferences();
         }
     }
 
-    // remove the periodic halo particles
-    deleteHaloParticles();
-    updateCellsParticleReferences();
-}
+    size_t LinkedCellsContainer::size() const { return particles.size(); }
 
-void LinkedCellsContainer::reserve(size_t n) {
-    Logger::logger->debug("Reserving space for {} particles", n);
+    Particle &LinkedCellsContainer::operator[](int i) { return particles[i]; }
 
-    size_t old_capacity = particles.capacity();
-    particles.reserve(n);
+    std::vector<Particle>::iterator LinkedCellsContainer::begin() { return particles.begin(); }
 
-    if (old_capacity != particles.capacity()) {
-        updateCellsParticleReferences();
-    }
-}
+    std::vector<Particle>::iterator LinkedCellsContainer::end() { return particles.end(); }
 
-size_t LinkedCellsContainer::size() const { return particles.size(); }
+    std::vector<Particle>::const_iterator LinkedCellsContainer::begin() const { return particles.begin(); }
 
-Particle &LinkedCellsContainer::operator[](int i) { return particles[i]; }
+    std::vector<Particle>::const_iterator LinkedCellsContainer::end() const { return particles.end(); }
 
-std::vector<Particle>::iterator LinkedCellsContainer::begin() { return particles.begin(); }
+    const std::vector<Particle> &LinkedCellsContainer::getParticles() const { return particles; }
 
-std::vector<Particle>::iterator LinkedCellsContainer::end() { return particles.end(); }
+    const std::array<double, 3> &LinkedCellsContainer::getDomainSize() const { return domain_size; }
 
-std::vector<Particle>::const_iterator LinkedCellsContainer::begin() const { return particles.begin(); }
+    double LinkedCellsContainer::getCutoffRadius() const { return cutoff_radius; }
 
-std::vector<Particle>::const_iterator LinkedCellsContainer::end() const { return particles.end(); }
+    const std::vector<Cell> &LinkedCellsContainer::getCells() { return cells; }
 
-const std::vector<Particle> &LinkedCellsContainer::getParticles() const { return particles; }
+    const std::vector<Cell *> &LinkedCellsContainer::getBoundaryCells() const { return boundary_cell_references; }
 
-const std::array<double, 3> &LinkedCellsContainer::getDomainSize() const { return domain_size; }
+    const std::array<double, 3> &LinkedCellsContainer::getCellSize() const { return cell_size; }
 
-double LinkedCellsContainer::getCutoffRadius() const { return cutoff_radius; }
+    const std::array<int, 3> &LinkedCellsContainer::getDomainNumCells() const { return domain_num_cells; }
 
-const std::vector<Cell> &LinkedCellsContainer::getCells() { return cells; }
-
-const std::vector<Cell *> &LinkedCellsContainer::getBoundaryCells() const { return boundary_cell_references; }
-
-const std::array<double, 3> &LinkedCellsContainer::getCellSize() const { return cell_size; }
-
-const std::array<int, 3> &LinkedCellsContainer::getDomainNumCells() const { return domain_num_cells; }
-
-int LinkedCellsContainer::cellCoordToCellIndex(int cx, int cy, int cz) const {
-    if (cx < -1 || cx > domain_num_cells[0] || cy < -1 || cy > domain_num_cells[1] || cz < -1 ||
-        cz > domain_num_cells[2]) {
-        return -1;
-    }
-    return (cx + 1) * (domain_num_cells[1] + 2) * (domain_num_cells[2] + 2) + (cy + 1) * (domain_num_cells[2] + 2) +
-           (cz + 1);
-}
-
-int LinkedCellsContainer::findCellForParticle(const std::array<double, 3> &pos) {
-    int cx = static_cast<int>(std::floor(pos[0] / cell_size[0]));
-    int cy = static_cast<int>(std::floor(pos[1] / cell_size[1]));
-    int cz = static_cast<int>(std::floor(pos[2] / cell_size[2]));
-
-    return cellCoordToCellIndex(cx, cy, cz);
-}
-
-Cell *LinkedCellsContainer::particlePosToCell(const std::array<double, 3> &pos) {
-    return particlePosToCell(pos[0], pos[1], pos[2]);
-}
-
-Cell *LinkedCellsContainer::particlePosToCell(double x, double y, double z) {
-    int cx = static_cast<int>(std::floor(x / cell_size[0]));
-    int cy = static_cast<int>(std::floor(y / cell_size[1]));
-    int cz = static_cast<int>(std::floor(z / cell_size[2]));
-
-    int cell_index = cellCoordToCellIndex(cx, cy, cz);
-    if (cell_index == -1) {
-        Logger::logger->error("Particle is outside of cells. Position: [{}, {}, {}]", x, y, z);
-        throw std::runtime_error("A particle is outside of the cells");
+    int LinkedCellsContainer::cellCoordToCellIndex(int cx, int cy, int cz) const {
+        if (cx < -1 || cx > domain_num_cells[0] || cy < -1 || cy > domain_num_cells[1] || cz < -1 ||
+            cz > domain_num_cells[2]) {
+            return -1;
+        }
+        return (cx + 1) * (domain_num_cells[1] + 2) * (domain_num_cells[2] + 2) + (cy + 1) * (domain_num_cells[2] + 2) +
+               (cz + 1);
     }
 
-    return &cells[cell_index];
-}
+    int LinkedCellsContainer::findCellForParticle(const std::array<double, 3> &pos) {
+        int cx = static_cast<int>(std::floor(pos[0] / cell_size[0]));
+        int cy = static_cast<int>(std::floor(pos[1] / cell_size[1]));
+        int cz = static_cast<int>(std::floor(pos[2] / cell_size[2]));
 
-std::string LinkedCellsContainer::boundaryConditionToString(const BoundaryCondition &bc) {
-    switch (bc) {
-        case BoundaryCondition::OUTFLOW:
-            return "Outflow";
-        case BoundaryCondition::REFLECTIVE:
-            return "Reflective";
-        case BoundaryCondition::PERIODIC:
-            return "Periodic";
-        default:
-            return "Unknown";
+        return cellCoordToCellIndex(cx, cy, cz);
     }
-};
+
+    Cell *LinkedCellsContainer::particlePosToCell(const std::array<double, 3> &pos) {
+        return particlePosToCell(pos[0], pos[1], pos[2]);
+    }
+
+    Cell *LinkedCellsContainer::particlePosToCell(double x, double y, double z) {
+        int cx = static_cast<int>(std::floor(x / cell_size[0]));
+        int cy = static_cast<int>(std::floor(y / cell_size[1]));
+        int cz = static_cast<int>(std::floor(z / cell_size[2]));
+
+        int cell_index = cellCoordToCellIndex(cx, cy, cz);
+        if (cell_index == -1) {
+            Logger::logger->error("Particle is outside of cells. Position: [{}, {}, {}]", x, y, z);
+            throw std::runtime_error("A particle is outside of the cells");
+        }
+
+        return &cells[cell_index];
+    }
+
+    std::string LinkedCellsContainer::boundaryConditionToString(const BoundaryCondition &bc) {
+        switch (bc) {
+            case BoundaryCondition::OUTFLOW:
+                return "Outflow";
+            case BoundaryCondition::REFLECTIVE:
+                return "Reflective";
+            case BoundaryCondition::PERIODIC:
+                return "Periodic";
+            default:
+                return "Unknown";
+        }
+    };
 
 /*
     Private methods of the LinkedCellsContainer
 */
 
-void LinkedCellsContainer::initCells() {
-    for (int cx = -1; cx < domain_num_cells[0] + 1; ++cx) {
-        for (int cy = -1; cy < domain_num_cells[1] + 1; ++cy) {
-            for (int cz = -1; cz < domain_num_cells[2] + 1; ++cz) {
-                if (cx < 0 || cx >= domain_num_cells[0] || cy < 0 || cy >= domain_num_cells[1] || cz < 0 ||
-                    cz >= domain_num_cells[2]) {
-                    Cell new_cell(Cell::CellType::HALO);
-                    cells.push_back(new_cell);
-                    halo_cell_references.push_back(&cells.back());
+    void LinkedCellsContainer::initCells() {
+        for (int cx = -1; cx < domain_num_cells[0] + 1; ++cx) {
+            for (int cy = -1; cy < domain_num_cells[1] + 1; ++cy) {
+                for (int cz = -1; cz < domain_num_cells[2] + 1; ++cz) {
+                    if (cx < 0 || cx >= domain_num_cells[0] || cy < 0 || cy >= domain_num_cells[1] || cz < 0 ||
+                        cz >= domain_num_cells[2]) {
+                        Cell new_cell(Cell::CellType::HALO);
+                        cells.push_back(new_cell);
+                        halo_cell_references.push_back(&cells.back());
 
-                    if (cx == -1) {
-                        left_halo_cell_references.push_back(&cells.back());
-                    }
-                    if (cx == domain_num_cells[0]) {
-                        right_halo_cell_references.push_back(&cells.back());
-                    }
-                    if (cy == -1) {
-                        bottom_halo_cell_references.push_back(&cells.back());
-                    }
-                    if (cy == domain_num_cells[1]) {
-                        top_halo_cell_references.push_back(&cells.back());
-                    }
-                    if (cz == -1) {
-                        back_halo_cell_references.push_back(&cells.back());
-                    }
-                    if (cz == domain_num_cells[2]) {
-                        front_halo_cell_references.push_back(&cells.back());
-                    }
-                } else if (cx == 0 || cx == domain_num_cells[0] - 1 || cy == 0 || cy == domain_num_cells[1] - 1 ||
-                           cz == 0 ||
-                           cz == domain_num_cells[2] - 1) {
-                    Cell new_cell(Cell::CellType::BOUNDARY);
-                    cells.push_back(new_cell);
-                    boundary_cell_references.push_back(&cells.back());
-                    domain_cell_references.push_back(&cells.back());
+                        if (cx == -1) {
+                            left_halo_cell_references.push_back(&cells.back());
+                        }
+                        if (cx == domain_num_cells[0]) {
+                            right_halo_cell_references.push_back(&cells.back());
+                        }
+                        if (cy == -1) {
+                            bottom_halo_cell_references.push_back(&cells.back());
+                        }
+                        if (cy == domain_num_cells[1]) {
+                            top_halo_cell_references.push_back(&cells.back());
+                        }
+                        if (cz == -1) {
+                            back_halo_cell_references.push_back(&cells.back());
+                        }
+                        if (cz == domain_num_cells[2]) {
+                            front_halo_cell_references.push_back(&cells.back());
+                        }
+                    } else if (cx == 0 || cx == domain_num_cells[0] - 1 || cy == 0 || cy == domain_num_cells[1] - 1 ||
+                               cz == 0 ||
+                               cz == domain_num_cells[2] - 1) {
+                        Cell new_cell(Cell::CellType::BOUNDARY);
+                        cells.push_back(new_cell);
+                        boundary_cell_references.push_back(&cells.back());
+                        domain_cell_references.push_back(&cells.back());
 
-                    if (cx == 0) {
-                        left_boundary_cell_references.push_back(&cells.back());
+                        if (cx == 0) {
+                            left_boundary_cell_references.push_back(&cells.back());
+                        }
+                        if (cx == domain_num_cells[0] - 1) {
+                            right_boundary_cell_references.push_back(&cells.back());
+                        }
+                        if (cy == 0) {
+                            bottom_boundary_cell_references.push_back(&cells.back());
+                        }
+                        if (cy == domain_num_cells[1] - 1) {
+                            top_boundary_cell_references.push_back(&cells.back());
+                        }
+                        if (cz == 0) {
+                            back_boundary_cell_references.push_back(&cells.back());
+                        }
+                        if (cz == domain_num_cells[2] - 1) {
+                            front_boundary_cell_references.push_back(&cells.back());
+                        }
+                    } else {
+                        Cell new_cell(Cell::CellType::INNER);
+                        cells.push_back(new_cell);
+                        domain_cell_references.push_back(&cells.back());
                     }
-                    if (cx == domain_num_cells[0] - 1) {
-                        right_boundary_cell_references.push_back(&cells.back());
-                    }
-                    if (cy == 0) {
-                        bottom_boundary_cell_references.push_back(&cells.back());
-                    }
-                    if (cy == domain_num_cells[1] - 1) {
-                        top_boundary_cell_references.push_back(&cells.back());
-                    }
-                    if (cz == 0) {
-                        back_boundary_cell_references.push_back(&cells.back());
-                    }
-                    if (cz == domain_num_cells[2] - 1) {
-                        front_boundary_cell_references.push_back(&cells.back());
-                    }
-                } else {
-                    Cell new_cell(Cell::CellType::INNER);
-                    cells.push_back(new_cell);
-                    domain_cell_references.push_back(&cells.back());
                 }
             }
         }
     }
-}
 
-std::array<unsigned, 3> computeSubdomainsPerDimension() {
-    auto numThreads = 0;
-    switch (numThreads) {
-        case 1:
-            return {1, 1, 1};
-        case 2:
-            return {2, 1, 1};
-        case 4:
-            return {2, 2, 1};
-        case 8:
-            return {4, 2, 1};
-        case 14:
-            return {7, 2, 1};
-        case 16:
-            return {4, 4, 1};
-        case 28:
-            return {7, 4, 1};
-        case 56:
-            return {8, 7, 1};
+    std::array<unsigned, 3> computeSubdomainsPerDimension() {
+        auto numThreads = 0;
+        switch (numThreads) {
+            case 1:
+                return {1, 1, 1};
+            case 2:
+                return {2, 1, 1};
+            case 4:
+                return {2, 2, 1};
+            case 8:
+                return {4, 2, 1};
+            case 14:
+                return {7, 2, 1};
+            case 16:
+                return {4, 4, 1};
+            case 28:
+                return {7, 4, 1};
+            case 56:
+                return {8, 7, 1};
 
+        }
     }
-}
 
-void LinkedCellsContainer::initSubdomains() {
-    //auto numThreads = 0; // amount of threads the user chooses
-    //now divide the domain into subdomains depending on the number of threads
-    std::array<unsigned, 3> subdomainsPerDimension = computeSubdomainsPerDimension();
-    //TODO: what if the amount of subdomains isn't a multiple of the amount of cells
-    //TODO: include the halo cells in the subdomain?
-    auto cellsPerSubdomainX = domain_num_cells[0] / subdomainsPerDimension[0];
-    auto cellsPerSubdomainY = domain_num_cells[1] / subdomainsPerDimension[1];
-    auto cellsPerSubdomainZ = domain_num_cells[2] / subdomainsPerDimension[2];
-    auto numSubdomains = subdomainsPerDimension[0] * subdomainsPerDimension[1]
-                         * subdomainsPerDimension[2];
-    // instantiate numSubdomains subdomains
-    for (int i = 0; i < subdomainsPerDimension[0]; ++i) {
-        for (int j = 0; j < subdomainsPerDimension[1]; ++j) {
-            for (int k = 0; k < subdomainsPerDimension[2]; ++k) {
-                subdomains.emplace(i, new Subdomain(delta_t, gravityConstant, cutoff_radius,
-                                                    std::make_unique<LinkedCellsContainer>(
-                                                            *this))); //std::unique_ptr<LinkedCellsContainer>(this)));
-                for (int l = 0; l < cellsPerSubdomainX; ++l) {
-                    for (int m = 0; m < cellsPerSubdomainY; ++m) {
-                        for (int n = 0; n < cellsPerSubdomainZ; ++n) {
-                            // case distinction whether it is a cell at subdomain border or not
-                            // for the addCell method
-                            if (l == 0 || l == cellsPerSubdomainX - 1 || m == 0 || m == cellsPerSubdomainY - 1 ||
-                                n == 0 || n == cellsPerSubdomainZ - 1) {
-                                subdomains.at(i)->addCell(true, &cells.at(
-                                        cellCoordToCellIndex(i * subdomainsPerDimension[0] + l,
-                                                             j * subdomainsPerDimension[1] + m,
-                                                             n * subdomainsPerDimension[2] + n)));
-                            } else {
-                                subdomains.at(i)->addCell(false, &cells.at(
-                                        cellCoordToCellIndex(i * subdomainsPerDimension[0] + l,
-                                                             j * subdomainsPerDimension[1] + m,
-                                                             n * subdomainsPerDimension[2] + n)));
+    void LinkedCellsContainer::initSubdomains() {
+        //auto numThreads = 0; // amount of threads the user chooses
+        //now divide the domain into subdomains depending on the number of threads
+        std::array<unsigned, 3> subdomainsPerDimension = computeSubdomainsPerDimension();
+        //TODO: what if the amount of subdomains isn't a multiple of the amount of cells
+        //TODO: include the halo cells in the subdomain?
+        auto cellsPerSubdomainX = domain_num_cells[0] / subdomainsPerDimension[0];
+        auto cellsPerSubdomainY = domain_num_cells[1] / subdomainsPerDimension[1];
+        auto cellsPerSubdomainZ = domain_num_cells[2] / subdomainsPerDimension[2];
+        auto numSubdomains = subdomainsPerDimension[0] * subdomainsPerDimension[1]
+                             * subdomainsPerDimension[2];
+        // instantiate numSubdomains subdomains
+        for (int i = 0; i < subdomainsPerDimension[0]; ++i) {
+            for (int j = 0; j < subdomainsPerDimension[1]; ++j) {
+                for (int k = 0; k < subdomainsPerDimension[2]; ++k) {
+                    subdomains.emplace(i, new Subdomain(delta_t, gravityConstant, cutoff_radius,
+                                                        std::make_unique<LinkedCellsContainer>(
+                                                                *this))); //std::unique_ptr<LinkedCellsContainer>(this)));
+                    for (int l = 0; l < cellsPerSubdomainX; ++l) {
+                        for (int m = 0; m < cellsPerSubdomainY; ++m) {
+                            for (int n = 0; n < cellsPerSubdomainZ; ++n) {
+                                // case distinction whether it is a cell at subdomain border or not
+                                // for the addCell method
+                                if (l == 0 || l == cellsPerSubdomainX - 1 || m == 0 || m == cellsPerSubdomainY - 1 ||
+                                    n == 0 || n == cellsPerSubdomainZ - 1) {
+                                    subdomains.at(i)->addCell(true, &cells.at(
+                                            cellCoordToCellIndex(i * subdomainsPerDimension[0] + l,
+                                                                 j * subdomainsPerDimension[1] + m,
+                                                                 n * subdomainsPerDimension[2] + n)));
+                                } else {
+                                    subdomains.at(i)->addCell(false, &cells.at(
+                                            cellCoordToCellIndex(i * subdomainsPerDimension[0] + l,
+                                                                 j * subdomainsPerDimension[1] + m,
+                                                                 n * subdomainsPerDimension[2] + n)));
+                                }
                             }
                         }
                     }
@@ -403,97 +497,131 @@ void LinkedCellsContainer::initSubdomains() {
             }
         }
     }
-}
 
-void LinkedCellsContainer::initCellNeighbourReferences() {
-    /*
-     * addition: add the computeForcesWithIndices indices
-     */
-    // Loop through each cell according to their cell coordinates
-    for (int cx = -1; cx < domain_num_cells[0] + 1; ++cx) {
-        for (int cy = -1; cy < domain_num_cells[1] + 1; ++cy) {
-            for (int cz = -1; cz < domain_num_cells[2] + 1; ++cz) {
-                Cell &cell = cells.at(cellCoordToCellIndex(cx, cy, cz));
+    void LinkedCellsContainer::initCellNeighbourReferences() {
+        /*
+         * addition: add the computeForcesWithIndices indices
+         */
+        // Loop through each cell according to their cell coordinates
+        for (int cx = -1; cx < domain_num_cells[0] + 1; ++cx) {
+            for (int cy = -1; cy < domain_num_cells[1] + 1; ++cy) {
+                for (int cz = -1; cz < domain_num_cells[2] + 1; ++cz) {
+                    Cell &cell = cells.at(cellCoordToCellIndex(cx, cy, cz));
 
-                // Loop through each of the current cells neighbour cells according to their cell coordinates
-                // except the current cell itself
-                for (int dx = -1; dx < 2; ++dx) {
-                    for (int dy = -1; dy < 2; ++dy) {
-                        for (int dz = -1; dz < 2; ++dz) {
-                            if (dx == 0 && dy == 0 && dz == 0) continue;
+                    // Loop through each of the current cells neighbour cells according to their cell coordinates
+                    // except the current cell itself
+                    for (int dx = -1; dx < 2; ++dx) {
+                        for (int dy = -1; dy < 2; ++dy) {
+                            for (int dz = -1; dz < 2; ++dz) {
+                                if (dx == 0 && dy == 0 && dz == 0) continue;
 
-                            // Get the cell index of the current neighbour cell
-                            int cell_index = cellCoordToCellIndex(cx + dx, cy + dy, cz + dz);
+                                // Get the cell index of the current neighbour cell
+                                int cell_index = cellCoordToCellIndex(cx + dx, cy + dy, cz + dz);
 
-                            // If the neighbour cell would be out of bounds, skip it
-                            if (cell_index == -1) continue;
+                                // If the neighbour cell would be out of bounds, skip it
+                                if (cell_index == -1) continue;
 
-                            // Add the neighbour to the current cells neighbour references
-                            // add to the current cell the indices of the neighbours which are
-                            /*
-                             *  add    add     add
-                             *         cell    add
-                             *
-                             * + behind the cell (dz == 1)
-                             * (needed for the subdomain parallization strategy)
-                             */
-                            if (dz == 1 || (dx == 1 && dy == 0) || (dx == 1 && dy == 1) || (dx == 0 && dy == 1)
-                                || (dx == -1 && dy == 1)) {
-                                cell.addToNeighboursToComputeForcesWith(&cells.at(cell_index));
+                                // Add the neighbour to the current cells neighbour references
+                                // add to the current cell the indices of the neighbours which are
+                                /*
+                                 *  add    add     add
+                                 *         cell    add
+                                 *
+                                 * + behind the cell (dz == 1)
+                                 * (needed for the subdomain parallization strategy)
+                                 */
+                                if (dz == 1 || (dx == 1 && dy == 0) || (dx == 1 && dy == 1) || (dx == 0 && dy == 1)
+                                    || (dx == -1 && dy == 1)) {
+                                    cell.addToNeighboursToComputeForcesWith(&cells.at(cell_index));
+                                }
+                                Cell &curr_neighbour = cells.at(cell_index);
+                                cell.addNeighbourReference(&curr_neighbour);
                             }
-                            Cell &curr_neighbour = cells.at(cell_index);
-                            cell.addNeighbourReference(&curr_neighbour);
                         }
                     }
                 }
             }
         }
     }
-}
 
-void LinkedCellsContainer::updateCellsParticleReferences() {
-    std::unordered_set<Cell *> newOccupiedCells;
-    //std::unordered_map<Particle*,Cell*> mapParticleToNewCell;
-    //occupied_cells_references.clear();
+    void LinkedCellsContainer::updateCellsParticleReferences() {
+#if defined(SUBDOMAIN) || defined(PARTICLES)
+#pragma omp parallel
+        {
+            occupied_cells_references.clear();
+#pragma omp for schedule(dynamic) //dynamic scheduling for deleting the cells
+            for (Cell& cell : cells) {
+                cell.clearParticleReferences();
+            }
+            // #pragma omp for schedule static()
+#pragma omp for schedule(static[100])
+            for (Particle& p : particles) {
+                Cell* cell = particlePosToCell(p.getX());
 
-    for (Cell *cell: occupied_cells_references) {
-        for (Particle *p: cell->getParticleReferences()) {
-            Cell *newCell = particlePosToCell(p->getX()); // new index
-            if (newCell == cell) {
-                newOccupiedCells.insert(cell);
-            } else {
-                newCell->addParticleReference(p); // insert into new cell
-                // mapParticleToNewCell.insert({p, newCell});
-                auto iterator = std::find(cell->getParticleReferences().begin(),
-                                          cell->getParticleReferences().end(), p);
-                cell->getParticleReferences().erase(iterator);
-                newOccupiedCells.insert(newCell);
+                occupied_cells_references.insert(cell);
+                omp_set_lock(cell->getLock());
+                cell->addParticleReference(&p);
+                omp_unset_lock(cell->getLock());
             }
         }
+#else
+        for (Cell &cell: cells) {
+            cell.clearParticleReferences();
+        }
+
+        // clear the set of used cells
+        occupied_cells_references.clear();
+
+        // add the particle references to the cells
+        for (Particle &p: particles) {
+            Cell *cell = particlePosToCell(p.getX());
+
+            occupied_cells_references.insert(cell);
+            cell->addParticleReference(&p);
+        }
+#endif
+        /* std::unordered_set<Cell *> newOccupiedCells;
+         //std::unordered_map<Particle*,Cell*> mapParticleToNewCell;
+         //occupied_cells_references.clear();
+
+         for (Cell *cell: occupied_cells_references) {
+             for (Particle *p: cell->getParticleReferences()) {
+                 Cell *newCell = particlePosToCell(p->getX()); // new index
+                 if (newCell == cell) {
+                     newOccupiedCells.insert(cell);
+                 } else {
+                     newCell->addParticleReference(p); // insert into new cell
+                     // mapParticleToNewCell.insert({p, newCell});
+                     auto iterator = std::find(cell->getParticleReferences().begin(),
+                                               cell->getParticleReferences().end(), p);
+                     cell->getParticleReferences().erase(iterator);
+                     newOccupiedCells.insert(newCell);
+                 }
+             }
+         }
+
+
+         // set to the new occupied cells
+         occupied_cells_references = newOccupiedCells;
+         //occupied_cells_references.swap(newOccupiedCells);*/
+
+
+        // clear the particle references in the cells
+        /* for (Cell& cell : cells) {
+             cell.clearParticleReferences();
+         }
+
+         // clear the set of used cells
+         occupied_cells_references.clear();
+
+         // add the particle references to the cells
+         for (Particle& p : particles) {
+             Cell* cell = particlePosToCell(p.getX());
+
+             occupied_cells_references.insert(cell);
+             cell->addParticleReference(&p);
+         }*/
     }
-
-
-    // set to the new occupied cells
-    occupied_cells_references = newOccupiedCells;
-    //occupied_cells_references.swap(newOccupiedCells);
-
-
-    // clear the particle references in the cells
-    /* for (Cell& cell : cells) {
-         cell.clearParticleReferences();
-     }
-
-     // clear the set of used cells
-     occupied_cells_references.clear();
-
-     // add the particle references to the cells
-     for (Particle& p : particles) {
-         Cell* cell = particlePosToCell(p.getX());
-
-         occupied_cells_references.insert(cell);
-         cell->addParticleReference(&p);
-     }*/
-}
 
 /*
  * for(cell : cells)
@@ -503,41 +631,52 @@ void LinkedCellsContainer::updateCellsParticleReferences() {
  *
  */
 
-void LinkedCellsContainer::updateCellsParticleReferencesOptimized() {
+    void LinkedCellsContainer::updateCellsParticleReferencesOptimized() {
 
-    std::unordered_set<Cell *> newOccupiedCells;
-    //std::unordered_map<Particle*,Cell*> mapParticleToNewCell;
+        std::unordered_set<Cell *> newOccupiedCells;
+        //std::unordered_map<Particle*,Cell*> mapParticleToNewCell;
 
-    for (Cell *cell: occupied_cells_references) {
-        for (Particle *p: cell->getParticleReferences()) {
-            Cell *newCell = particlePosToCell(p->getX()); // new index
-            if (newCell == cell) {
-                newOccupiedCells.insert(cell);
-            } else {
-                newCell->addParticleReference(p); // insert into new cell
-                // mapParticleToNewCell.insert({p, newCell});
-                auto iterator = std::find(cell->getParticleReferences().begin(),
-                                          cell->getParticleReferences().end(), p);
-                cell->getParticleReferences().erase(iterator);
-                newOccupiedCells.insert(newCell);
+        for (Cell *cell: occupied_cells_references) {
+            for (Particle *p: cell->getParticleReferences()) {
+                Cell *newCell = particlePosToCell(p->getX()); // new index
+                if (newCell == cell) {
+                    newOccupiedCells.insert(cell);
+                } else {
+                    newCell->addParticleReference(p); // insert into new cell
+                    // mapParticleToNewCell.insert({p, newCell});
+                    auto iterator = std::find(cell->getParticleReferences().begin(),
+                                              cell->getParticleReferences().end(), p);
+                    cell->getParticleReferences().erase(iterator);
+                    newOccupiedCells.insert(newCell);
+                }
+            }
+        }
+        // set to the new occupied cells
+        occupied_cells_references = newOccupiedCells;
+        //occupied_cells_references.swap(newOccupiedCells);
+    }
+
+    void LinkedCellsContainer::deleteHaloParticles() {
+        for (Cell *cell: halo_cell_references) {
+            for (Particle *p: cell->getParticleReferences()) {
+                particles.erase(std::find(particles.begin(), particles.end(), *p));
             }
         }
     }
 
-
-    // set to the new occupied cells
-    occupied_cells_references = newOccupiedCells;
-    //occupied_cells_references.swap(newOccupiedCells);
-}
-
-void LinkedCellsContainer::deleteHaloParticles() {
-    for (Cell *cell: halo_cell_references) {
-        for (Particle *p: cell->getParticleReferences()) {
-            particles.erase(std::find(particles.begin(), particles.end(), *p));
-        }
+    std::map<unsigned int, Subdomain *> LinkedCellsContainer::getSubdomains() {
+        return subdomains;
     }
-}
 
-std::map<unsigned int, Subdomain *> LinkedCellsContainer::getSubdomains() {
-    return subdomains;
+/*
+void LinkedCellsContainer::prepareForceCalculationOptimized() {
+    updateCellsParticleReferences();
+    //TODO maybe parallelize
+    ReflectiveBoundaryType::pre(*this);
+    OutflowBoundaryType::pre(*this);
+    PeriodicBoundaryType::pre(*this);
+
+    // update the particle references in the cells in case the particles have moved
+    updateCellsParticleReferences();
 }
+*/

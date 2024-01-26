@@ -9,6 +9,7 @@
 
 #include <array>
 #include <string>
+#include <omp.h>
 
 /**
  * @brief Class to represent a particle
@@ -74,6 +75,8 @@ class Particle {
      * stores nullptr if no neighbor is present in that direction
      */
     std::array<Particle*, 8> neighbors;
+
+    omp_lock_t particleLock;
 
    public:
     Particle(const Particle& other);
@@ -176,6 +179,8 @@ class Particle {
     bool operator==(const Particle& other) const;
 
     [[nodiscard]] std::string toString() const;
+
+    omp_lock_t* getLock();
 };
 
 std::ostream& operator<<(std::ostream& stream, Particle& p);

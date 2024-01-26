@@ -77,6 +77,8 @@ class LinkedCellsContainer : public ParticleContainer {
      */
     void prepareForceCalculation() override;
 
+    //void prepareForceCalculationOptimized();
+
     /**
      * @brief Applies the given simple force sources to the particles
      *
