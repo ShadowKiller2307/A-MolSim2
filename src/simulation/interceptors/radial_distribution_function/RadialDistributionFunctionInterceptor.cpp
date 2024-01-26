@@ -11,11 +11,11 @@ RadialDistributionFunctionInterceptor::RadialDistributionFunctionInterceptor(dou
 void RadialDistributionFunctionInterceptor::onSimulationStart(Simulation& simulation) {
     csv_writer = std::make_unique<CSVWriter>(simulation.params.output_dir_path / "radial_distribution_function.csv");
 
-    csv_writer->initialize({"iteration", "bin_index (w= " + std::to_string(bin_width) + ")", "samples", "local_density"});
-
+    //csv_writer->initialize({"iteration", "bin_index (w= " + std::to_string(bin_width) + ")", "samples", "local_density"});
+    csv_writer->initialize({"iteration", "bin_mid_point", "local_density"});
     auto expected_iterations = static_cast<size_t>(std::ceil(simulation.params.end_time / simulation.params.delta_t) + 1);
     SimulationInterceptor::every_nth_iteration = std::max(1, static_cast<int>(sample_every_x_percent * expected_iterations / 100));
-
+    //SimulationInterceptor::every_nth_iteration = 5000;
     samples_count = 0;
 }
 
@@ -40,7 +40,10 @@ void RadialDistributionFunctionInterceptor::operator()(size_t iteration, Simulat
     }
 
     for (auto& [bin_index, samples] : samples_per_bin_index) {
-        csv_writer->writeRow({iteration, bin_index, samples, calculateLocalDensity(samples, bin_index)});
+        double local_density = calculateLocalDensity(samples, bin_index);
+        double bin_mid_point = static_cast<double>(bin_index) * bin_width + bin_width / 2.0;
+        csv_writer->writeRow({iteration, bin_mid_point, local_density});
+        //csv_writer->writeRow({iteration, bin_index, samples, calculateLocalDensity(samples, bin_index)});
     }
 }
 
@@ -59,10 +62,10 @@ RadialDistributionFunctionInterceptor::operator std::string() const {
 }
 
 double RadialDistributionFunctionInterceptor::calculateLocalDensity(size_t N, size_t bin_index) const {
-    double bin_start = bin_index * bin_width;
-    double bin_end = (bin_index + 1) * bin_width;
+    double bin_start = static_cast<double>(bin_index) * bin_width;
+    double bin_end = static_cast<double>(bin_index + 1) * bin_width;
 
-    double bin_volume = 4.0 / 3.0 * M_PI * (std::pow(bin_end, 3) - std::pow(bin_start, 3));
+    double bin_volume = (4.0 / 3.0) * M_PI * (std::pow(bin_end, 3) - std::pow(bin_start, 3));
 
-    return N / bin_volume;
+    return static_cast<double>(N) / bin_volume;
 }

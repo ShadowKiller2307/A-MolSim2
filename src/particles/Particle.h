@@ -24,8 +24,9 @@ class Particle {
      */
     std::array<double, 3> x;
 
-    /// Used for the position of the particle regardless of periodic teleportation.
-    std::array<double,3> distance_position;
+
+    /// Used for correct displacement calculation for variance
+    std::array<double,3> displacement_to_add;
 
 
 
@@ -92,14 +93,13 @@ class Particle {
      */
     void setX(const std::array<double, 3>& x);
 
-    /***
-     * @brief Sets the distance position of the particle
-     * @param distance_position
+
+
+    /**
+     * @brief Sets the displacement of the particle
+     * @param displacement_to_add New displacement
      */
-    void setDistancePosition(const std::array<double,3>& distance_position);
-
-
-
+    void setDisplacementToAdd(const std::array<double,3>& displacement_to_add);
 
     /**
      * @brief Sets the velocity of the particle
@@ -128,9 +128,10 @@ class Particle {
     [[nodiscard]] const std::array<double, 3>& getX() const;
 
     /**
-     * @brief Gets the distance position of the particle
+     * @brief Gets the displacement of the particle
      */
-    [[nodiscard]] const std::array<double,3>& getDistancePosition() const;
+    [[nodiscard]] const std::array<double, 3>& getDisplacementToAdd() const;
+
 
 
     /**

@@ -24,9 +24,13 @@ void DiffusionInterceptor::operator()(size_t iteration, Simulation& simulation) 
     double sum = 0;
     size_t i = 0;
     for (auto & particle : *simulation.particle_container) {
-        std::array<double,3> distance_pos = particle.getDistancePosition();
-        double norm = ArrayUtils::L2Norm(distance_pos-previous_references.at(i));
-        norm = std::pow(norm,0.5);
+
+        std::array<double,3> displacement = particle.getX()-previous_references.at(i);
+        displacement= displacement+particle.getDisplacementToAdd();
+        particle.setDisplacementToAdd({0,0,0});
+
+        double norm = ArrayUtils::L2Norm(displacement);
+        norm *=norm;
         previous_references.at(i) = particle.getX();
         sum+=norm;
         i++;

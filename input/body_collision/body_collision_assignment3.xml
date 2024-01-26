@@ -32,6 +32,8 @@
         <interceptors>
             <FrameWriter output_format="vtu" fps="24" video_length_s="30" />
             <Diffusion></Diffusion>
+            <RadialDistributionFunction bin_width="0.1" sample_every_x_percent="25"/>
+
         </interceptors>
     </settings>
 
