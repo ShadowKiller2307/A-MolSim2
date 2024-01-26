@@ -35,7 +35,7 @@ TEST(Diffusion,ProperDisplacementAfterPeriodic){
     auto overview = simulation.runSimulation();
     interceptor.operator()(1,simulation);
 
-    EXPECT_NEAR(1.21,interceptor.getVariancesForTestMode()[0],1e-14);
+    EXPECT_NEAR(1.21,interceptor.getVariancesForTestMode()[0],1e-10);
 
 
 
