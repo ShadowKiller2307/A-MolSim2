@@ -26,9 +26,13 @@ Simulation::Simulation(const std::vector<Particle>& initial_particles, const Sim
     // Create particle container
     if (std::holds_alternative<SimulationParams::LinkedCellsType>(params.container_type)) {
         auto lc_type = std::get<SimulationParams::LinkedCellsType>(params.container_type);
+#if defined(STRATEGY_1) || defined(STRATEGY_2)
+        linkedCellsContainer = std::make_unique<LinkedCellsContainer>(lc_type.domain_size, lc_type.cutoff_radius, lc_type.boundary_conditions);
+#else
         particle_container =
             std::make_unique<LinkedCellsContainer>(lc_type.domain_size, lc_type.cutoff_radius, lc_type.boundary_conditions);
     } else if (std::holds_alternative<SimulationParams::DirectSumType>(params.container_type)) {
+#endif
         particle_container = std::make_unique<DirectSumContainer>();
     } else {
         throw std::runtime_error("Unknown container type");
@@ -43,10 +47,9 @@ Simulation::Simulation(const std::vector<Particle>& initial_particles, const Sim
 }
 
 Simulation::~Simulation() = default;
-/*
-template<unsigned N>
+
 SimulationOverview Simulation::runSimulation() {
-    *//*size_t iteration = 0;
+    size_t iteration = 0;
     double simulated_time = 0;
 
     // Calculate initial forces
@@ -66,24 +69,17 @@ SimulationOverview Simulation::runSimulation() {
 
     auto t_start = std::chrono::high_resolution_clock::now();
 
-    *//**//*if (N == 1 || N == 2) {
-        static_cast<LinkedCellsContainer>(*particle_container);
-    }*//**//*
 
     std::unique_ptr<VerletFunctor> verletFunctor;
 
     while (simulated_time < params.end_time) {
-        verletFunctor->templated_step<N>();
-        *//**//* if constexpr (N == 1) { //
-             verletFunctor->templated_step<N>();
-             //integration_functor->step(particle_container, params.simple_forces, params.pairwise_forces, params.delta_t);
-         }
-         else if constexpr (N == 2) {
-
-         }
-         else {
-
-         }*//**//*
+#ifdef STRATEGY_1
+        verletFunctor->templated_step<1>();
+#elif STRATEGY_2
+        verletFunctor->templated_step<2>();
+#else
+        verletFunctor->step(particle_container, params.simple_forces, params.pairwise_forces, params.delta_t);
+#endif
         ++iteration;
         simulated_time += params.delta_t;
 
@@ -120,8 +116,8 @@ SimulationOverview Simulation::runSimulation() {
         savePerformanceTest(overview, params);
     }
 
-    return overview;*//*
-}*/
+    return overview;
+}
 
 void Simulation::savePerformanceTest(const SimulationOverview& overview, const SimulationParams& params) {
     // write the results to the file

@@ -242,6 +242,8 @@ class LinkedCellsContainer : public ParticleContainer {
      */
     static std::string boundaryConditionToString(const BoundaryCondition& bc);
 
+    std::map<unsigned int, Subdomain*> getSubdomains() override;
+
    private:
     /**
      * @brief Populates the cell vector and sets the cells types
@@ -270,8 +272,6 @@ class LinkedCellsContainer : public ParticleContainer {
      * manually after this operation!
      */
     void deleteHaloParticles();
-
-    std::map<unsigned int, Subdomain*> getSubdomains() override;
 
     /**
      * @brief Friend class to allow access to the internal data structures

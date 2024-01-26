@@ -207,7 +207,7 @@ std::tuple<std::vector<Particle>, SimulationParams> prepareParticles(std::filesy
             Simulation simulation{sub_particles, sub_config};
 
             sub_config.logSummary(depth);
-            auto result = simulation.runSimulation<3>();
+            auto result = simulation.runSimulation();
 
             // TODO: following lines cause linking error
 /*#ifdef STRATEGY_1
