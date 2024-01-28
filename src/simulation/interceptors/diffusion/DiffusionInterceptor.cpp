@@ -49,7 +49,7 @@ void DiffusionInterceptor::operator()(size_t iteration, Simulation& simulation) 
         i++;
     }
     var = coefficient*sum;
-    Logger::logger->error("coeff: {}, sum: {}\n",coefficient,sum);
+
     if(test_mode){
         variances_for_test_mode.push_back(var);
     }
