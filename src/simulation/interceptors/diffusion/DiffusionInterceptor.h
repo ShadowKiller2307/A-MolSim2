@@ -40,8 +40,10 @@ public:
 
     void setTestMode(bool mode);
 
-    [[nodiscard]] std::vector<double> getVariancesForTestMode() const;
+    void setPreviousReferences(std::vector<std::array<double,3>>& references);
 
+    [[nodiscard]] std::vector<double> getVariancesForTestMode() const;
+    [[nodiscard]] bool isTestMode() const;
 
 private:
     std::unique_ptr<CSVWriter> csv_writer;
@@ -51,7 +53,6 @@ private:
 
     bool test_mode;
     std::vector<double> variances_for_test_mode;
-
 
 
 

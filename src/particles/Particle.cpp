@@ -38,7 +38,7 @@ Particle::Particle(std::array<double, 3> x_arg, std::array<double, 3> v_arg, dou
     type = type_arg;
     old_f = {0., 0., 0.};
     std::fill(neighbors.begin(), neighbors.end(), nullptr);
-
+    displacement_to_add = {0,0,0};
     Logger::logger->debug("Particle created");
 }
 

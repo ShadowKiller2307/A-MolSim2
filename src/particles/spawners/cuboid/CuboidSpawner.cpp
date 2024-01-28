@@ -34,6 +34,7 @@ int CuboidSpawner::spawnParticles(std::vector<Particle> &particles) const
                 const auto x = lower_left_corner + grid_spacing * grid_pos;
 
                 Particle particle(x, initial_velocity, mass, type, epsilon, sigma);
+                particle.setDisplacementToAdd({0, 0, 0});
                 Thermostat::setParticleTemperature(initial_temperature, particle, third_dimension ? 3 : 2);
                 particles.push_back(std::move(particle));
             }
