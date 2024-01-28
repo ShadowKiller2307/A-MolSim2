@@ -23,7 +23,7 @@ jobs:
         cmake -DCMAKE_C_FLAGS="-fsanitize=address" -DCMAKE_CXX_FLAGS="-fsanitize=address" ..
         make -j
 
-    - name: Building the tests and executing them
+    - name: Running the tests
       run: |
         cd build
         cd tests
