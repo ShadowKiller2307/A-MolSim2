@@ -18,6 +18,8 @@ void Subdomain::calculateForcesBetweenCells(Cell *one, Cell *two) {
 
 }
 
+//TODO: need to change the order of acquiring the locks because
+// at the moment deadlocks can occur
 void Subdomain::updateSubdomain(const std::vector<std::shared_ptr<PairwiseForceSource>> &force_sources) {
     //apply simple forces
     for (auto &cell: subdomainCells) {

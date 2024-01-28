@@ -68,7 +68,7 @@ void DirectSumContainer::updateVelocitySubdomain() {
     // do nothing
 }*/
 
-std::map<unsigned int, Subdomain *> DirectSumContainer::getSubdomains() {
+std::map<std::array<unsigned int, 3>, Subdomain*> DirectSumContainer::getSubdomains() {
     return {};
 }
 

@@ -160,5 +160,5 @@ class DirectSumContainer : public ParticleContainer {
 
     [[nodiscard]] const std::array<double, 3>& getDomainSize() const override;
 
-    std::map<unsigned int, Subdomain*> getSubdomains() override;
+    std::map<std::array<unsigned int, 3>, Subdomain*> getSubdomains() override;
 };

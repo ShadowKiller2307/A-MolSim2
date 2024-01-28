@@ -7,3 +7,7 @@ std::array<double, 3UL> GlobalDownwardsGravity::calculateForce(Particle& p) cons
 GlobalDownwardsGravity::operator std::string() const { return "GlobalDownwardsGravity"; }
 
 void GlobalDownwardsGravity::setGravitationalAcceleration(double g) { this->g = g; }
+
+double GlobalDownwardsGravity::getGravityConstant() {
+    return g;
+}

@@ -28,6 +28,8 @@ class GlobalDownwardsGravity : public SimpleForceSource {
      */
     explicit operator std::string() const override;
 
+    double getGravityConstant() override;
+
     /**
      * @brief Sets the gravitational acceleration
      *

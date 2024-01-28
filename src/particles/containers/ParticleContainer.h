@@ -67,7 +67,7 @@ class ParticleContainer {
     /**
      * @brief return the subdomains belonging to the container for the first parallelization strategy
      */
-    virtual std::map<unsigned int, Subdomain*> getSubdomains() = 0;
+    virtual std::map<std::array<unsigned int, 3>, Subdomain*> getSubdomains() = 0;
 
     /**
      * @brief Reserves space for n particles

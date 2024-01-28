@@ -36,6 +36,8 @@ class SimpleForceSource {
      * @brief Conversion from a force source object to a string containing its name
      */
     virtual explicit operator std::string() const = 0;
+
+    virtual double getGravityConstant() = 0;
 };
 
 // overload the << operator for the ForceSource class to allow easier printing

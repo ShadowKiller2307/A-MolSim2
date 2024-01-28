@@ -23,15 +23,19 @@ void VerletFunctor::step(std::unique_ptr<ParticleContainer> &particle_container,
     }
 
     // calculate new forces
+    //std::cout << "begin calculate new forces" << std::endl;
     particle_container->prepareForceCalculation();  // here the boundary condition pre functions will be called
     particle_container->applySimpleForces(simple_force_sources);
     particle_container->applyPairwiseForces(pairwise_force_sources); // here the boundary condition apply
+ //   std::cout << "end calculate new forces" << std::endl;
     // boundary functions will be called
 
+   // std::cout << "begin velocity calculation begin: " << std::endl;
     for (auto &p: *particle_container) {
         const std::array<double, 3> new_v = p.getV() + (delta_t / (2 * p.getM())) * (p.getF() + p.getOldF());
         p.setV(new_v);
     }
+   // std::cout << "verlet functor step end" << std::endl;
 
 }
 /*

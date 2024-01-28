@@ -244,7 +244,22 @@ class LinkedCellsContainer : public ParticleContainer {
      */
     static std::string boundaryConditionToString(const BoundaryCondition& bc);
 
-    std::map<unsigned int, Subdomain*> getSubdomains() override;
+    std::map<std::array<unsigned int, 3>, Subdomain*> getSubdomains() override;
+
+    // made updateCellParticleReferences and deleteHaloParticles public for now
+    // as they momentarily need to be called by the templatedStep of the VerletFunctor
+    /**
+    * @brief Updates the particle references in the cells. This is necessary after a reallocation of the internal particle vector.
+    */
+    void updateCellsParticleReferences();
+
+    void updateCellsParticleReferencesOptimized();
+
+    /**
+     * @brief Removes all particles in the halo cells from the particles vector. ATTENTION: A particle reference update must be triggered
+     * manually after this operation!
+     */
+    void deleteHaloParticles();
 
    private:
     /**
@@ -262,18 +277,6 @@ class LinkedCellsContainer : public ParticleContainer {
      */
     void initCellNeighbourReferences();
 
-    /**
-     * @brief Updates the particle references in the cells. This is necessary after a reallocation of the internal particle vector.
-     */
-    void updateCellsParticleReferences();
-
-    void updateCellsParticleReferencesOptimized();
-
-    /**
-     * @brief Removes all particles in the halo cells from the particles vector. ATTENTION: A particle reference update must be triggered
-     * manually after this operation!
-     */
-    void deleteHaloParticles();
 
     /**
      * @brief Friend class to allow access to the internal data structures
@@ -413,9 +416,14 @@ class LinkedCellsContainer : public ParticleContainer {
     std::vector<Cell*> front_halo_cell_references;
 
     /**
-    * @brief list of subdomains initialized if parallelization strategy 1 is chosen
+    * @brief map of subdomains initialized if parallelization strategy 1 is chosen
     */
-    std::map<unsigned int, Subdomain*> subdomains;
+    std::map<std::array<unsigned int, 3>, Subdomain*> subdomains;
+
+    /**
+     * @brief computes the number of subdomains given a number of threads
+     */
+    std::array<double, 3> computeSubdomainsPerDimension(int numThreads);
 
     double delta_t;
 

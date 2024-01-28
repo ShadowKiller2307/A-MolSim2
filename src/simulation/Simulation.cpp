@@ -23,20 +23,28 @@
 
 Simulation::Simulation(const std::vector<Particle>& initial_particles, const SimulationParams& params, IntegrationMethod integration_method)
     : params(params), integration_functor(get_integration_functor(integration_method)) {
+   // std::cout << "begin simulation constructor" << std::endl;
     // Create particle container
     if (std::holds_alternative<SimulationParams::LinkedCellsType>(params.container_type)) {
         auto lc_type = std::get<SimulationParams::LinkedCellsType>(params.container_type);
-#if defined(STRATEGY_1) || defined(STRATEGY_2)
+#if defined(SUBDOMAINS) || defined(PARTICLES)
         linkedCellsContainer = std::make_unique<LinkedCellsContainer>(lc_type.domain_size, lc_type.cutoff_radius, lc_type.boundary_conditions);
+        linkedCellsContainer->reserve(initial_particles.size());
+        for (auto& particle : initial_particles) {
+            linkedCellsContainer->addParticle(particle);
+            initial_pos_of_particles.push_back(particle.getX());
+        }
 #else
         particle_container =
             std::make_unique<LinkedCellsContainer>(lc_type.domain_size, lc_type.cutoff_radius, lc_type.boundary_conditions);
-    } else if (std::holds_alternative<SimulationParams::DirectSumType>(params.container_type)) {
 #endif
+    } else if (std::holds_alternative<SimulationParams::DirectSumType>(params.container_type)) {
         particle_container = std::make_unique<DirectSumContainer>();
     } else {
         throw std::runtime_error("Unknown container type");
     }
+
+    std::cout << "reach until here" << std::endl;
 
     // Add particles to container
     particle_container->reserve(initial_particles.size());
@@ -44,6 +52,7 @@ Simulation::Simulation(const std::vector<Particle>& initial_particles, const Sim
         particle_container->addParticle(particle);
         initial_pos_of_particles.push_back(particle.getX());
     }
+   // std::cout << "end simulation constructor" << std::endl;
 }
 
 Simulation::~Simulation() = default;
@@ -52,42 +61,72 @@ SimulationOverview Simulation::runSimulation() {
     size_t iteration = 0;
     double simulated_time = 0;
 
-    // Calculate initial forces
+#if defined(SUBDOMAIN) || defined(PARTICLES)
+    linkedCellsContainer->prepareForceCalculation();
+    linkedCellsContainer->applySimpleForces(params.simple_forces);
+    linkedCellsContainer->applyPairwiseForces(params.pairwise_forces);
+#endif
+
+    // Calculate initial forces  //TODO: has also to be done for the parallelization strategies
     particle_container->prepareForceCalculation();
     particle_container->applySimpleForces(params.simple_forces);
     particle_container->applyPairwiseForces(params.pairwise_forces);
+   // params.simple_forces.at(0).
 
     Logger::logger->info("Simulation started...");
 
     std::time_t t_start_helper = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     Logger::logger->info("Start time: {}", fmt::format("{:%A %Y-%m-%d %H:%M:%S}", fmt::localtime(t_start_helper)));
 
+  //  std::cout << "bis hier 1" << std::endl;
     // Notify interceptors that the simulation is about to start
     for (auto& interceptor : params.interceptors) {
         (*interceptor).onSimulationStart(*this);
     }
+ //   std::cout << "bis hier 2" << std::endl;
 
     auto t_start = std::chrono::high_resolution_clock::now();
 
+    std::unique_ptr<VerletFunctor> verletFunctor = std::make_unique<VerletFunctor>();
 
-    std::unique_ptr<VerletFunctor> verletFunctor;
+ //   std::cout << "bis hier 3" << std::endl;
+    // get the gravity variable so that it can be passed to the templated verletFunctor step
+
+ //   std::cout << "bis hier" << std::endl;
+    if (!params.simple_forces.empty()) {
+        double gravityConstant = params.simple_forces.at(
+                0)->getGravityConstant(); //TODO: this causes a std::out_of_range exception
+    }
+    ///////////////////////////////////////// here almost all the computing work is done /////////////////////////////////////////////////////////////////////////////
+
 
     while (simulated_time < params.end_time) {
-#ifdef STRATEGY_1
-        verletFunctor->templated_step<1>();
-#elif STRATEGY_2
-        verletFunctor->templated_step<2>();
+#if defined(SUBDOMAIN)
+        std::cout << "subdomains" << std::endl;
+        verletFunctor->templated_step<1>(linkedCellsContainer, params.simple_forces, params.pairwise_forces, params.delta_t, gravityConstant);
+#endif
+//#if defined(PARTICLES)
+#ifdef PARTICLES
+        std::cout << "particles" << std::endl;
+        verletFunctor->templated_step<2>(linkedCellsContainer, params.simple_forces, params.pairwise_forces, params.delta_t, gravityConstant);
 #else
-        verletFunctor->step(particle_container, params.simple_forces, params.pairwise_forces, params.delta_t);
+     //   std::cout << "start integration functor" << std::endl;
+        integration_functor->step(particle_container, params.simple_forces, params.pairwise_forces, params.delta_t);
+       // std::cout << "end integration functor" << std::endl;
 #endif
         ++iteration;
         simulated_time += params.delta_t;
+
+        //TODO: maybe also parallelize this
 
         // Notify interceptors of the current iteration
         for (auto& interceptor : params.interceptors) {
             (*interceptor).notify(iteration, *this);
         }
     }
+
+
+    //////////////////////////////////////////////// end of the most computing work //////////////////////////////////////////////////////////////////////////////////
 
     auto t_end = std::chrono::high_resolution_clock::now();
 
