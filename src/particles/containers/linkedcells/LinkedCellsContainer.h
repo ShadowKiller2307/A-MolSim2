@@ -63,6 +63,12 @@ class LinkedCellsContainer : public ParticleContainer {
 
     int findCellForParticle(const std::array<double, 3>& pos);
 
+
+    /**
+     * @brief initialize the subdomains if parallelization strategy 1 is chosen
+     */
+    void initSubdomains(int numThreads);
+
     /**
      * @brief Adds a particle to the container
      *
@@ -99,6 +105,8 @@ class LinkedCellsContainer : public ParticleContainer {
      * reduce the number of force calculations necessary, depending on the cutoff radius.
      */
     void applyPairwiseForces(const std::vector<std::shared_ptr<PairwiseForceSource>>& force_sources) override;
+
+    void applyPairwiseForcesOptimized(const std::vector<std::shared_ptr<PairwiseForceSource>>& force_sources);
 
     /**
      * @brief Reserves space for n particles. This is useful if the number of particles is known in advance
@@ -261,16 +269,20 @@ class LinkedCellsContainer : public ParticleContainer {
      */
     void deleteHaloParticles();
 
+    std::vector<Subdomain*> getSubdomainsVector();
+
+   /* *//**
+    * @brief initialize the subdomains if parallelization strategy 1 is chosen
+    *//*
+    void initSubdomains();
+*/
+
    private:
     /**
      * @brief Populates the cell vector and sets the cells types
      */
     void initCells();
 
-    /**
-     * @brief initialize the subdomains if parallelization strategy 1 is chosen
-     */
-    void initSubdomains();
 
     /**
      * @brief Sets the neighbour references for each cell in the cell vector
@@ -419,6 +431,8 @@ class LinkedCellsContainer : public ParticleContainer {
     * @brief map of subdomains initialized if parallelization strategy 1 is chosen
     */
     std::map<std::array<unsigned int, 3>, Subdomain*> subdomains;
+
+    std::vector<Subdomain*> subdomainsVector;
 
     /**
      * @brief computes the number of subdomains given a number of threads

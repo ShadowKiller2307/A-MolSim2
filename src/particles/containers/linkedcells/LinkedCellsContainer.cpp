@@ -108,12 +108,12 @@ void LinkedCellsContainer::prepareForceCalculation() {
 
     // update the particle references in the cells in case the particles have moved
     updateCellsParticleReferences();
-   // std::cout << "prepare force calculation end" << std::endl;
+    // std::cout << "prepare force calculation end" << std::endl;
 }
 
 void
 LinkedCellsContainer::applySimpleForces(const std::vector<std::shared_ptr<SimpleForceSource>> &simple_force_sources) {
-   // std::cout << "apply simple forces begin" << std::endl;
+    // std::cout << "apply simple forces begin" << std::endl;
     // strategy 1: distribute the particles over the threads
     //#pragma omp parallel for schedule(static, 100)
     //#pragma omp parallel for schedule(dynamic)
@@ -135,25 +135,45 @@ LinkedCellsContainer::applySimpleForces(const std::vector<std::shared_ptr<Simple
     }*/
 }
 
-void LinkedCellsContainer::applyPairwiseForces(const std::vector<std::shared_ptr<PairwiseForceSource>> &force_sources) {
-    /// optimize this for the particle parallelization strategy
-    //std::cout << "apply pairwise forces begin" << std::endl;
-#ifdef PARTICLES
+void LinkedCellsContainer::applyPairwiseForcesOptimized(
+        const std::vector<std::shared_ptr<PairwiseForceSource>> &force_sources) {
+    //  std::cout << "reach apply pairwise forces optimized" << std::endl;
+/*#pragma omp single
+    {*/
+    ReflectiveBoundaryType::applyBoundaryConditions(*this);
+    OutflowBoundaryType::applyBoundaryConditions(*this);
+    PeriodicBoundaryType::applyBoundaryConditions(*this);
+
+    for (Cell *cell: domain_cell_references) {
+        cell->clearAlreadyInfluencedBy();
+    }
+
     for (Cell *cell: occupied_cells_references) {
         // skip halo cells
-        // if (cell->getCellType() == Cell::CellType::HALO) continue;
-
+        if (cell->getCellType() == Cell::CellType::HALO) continue;
+        size_t amountOfParticles = cell->getParticleReferences().size();
 #pragma omp parallel
         {
-            // for one particle, forces with the particles in the same cell and
-            // in the neighbour cells have to be calculated
-            size_t amountOfParticles = cell->getParticleReferences().size();
+/*#pragma omp single
+            {
+                ReflectiveBoundaryType::applyBoundaryConditions(*this);
+                OutflowBoundaryType::applyBoundaryConditions(*this);
+                PeriodicBoundaryType::applyBoundaryConditions(*this);
 
+            }*/
 #pragma omp for schedule(dynamic)
             /// at the moment, the particles get locked
             for (size_t i = 0; i < amountOfParticles; ++i) {
+                if (i >= cell->getParticleReferences().size()) {
+                    throw std::out_of_range("Wrong particle access");
+                }
+
                 Particle *p = cell->getParticleReferences().at(i);
-                for (size_t j = i+1; j < amountOfParticles; ++j) {
+                for (size_t j = i + 1; j < amountOfParticles; ++j) {
+                  //  std::cout << " inner force calculation begin" << std::endl;
+                    if (j >= cell->getParticleReferences().size()) {
+                        throw std::out_of_range("Wrong particle access");
+                    }
                     Particle *q = cell->getParticleReferences().at(j);
                     std::array<double, 3> total_force{0, 0, 0};
                     for (auto &force: force_sources) {
@@ -165,9 +185,12 @@ void LinkedCellsContainer::applyPairwiseForces(const std::vector<std::shared_ptr
                     omp_set_lock(q->getLock());
                     q->setF(q->getF() - total_force);
                     omp_unset_lock(q->getLock());
+                    //std::cout << " inner force calculation end" << std::endl;
                 }
-                for (Cell *neighbour: cell->getNeighboursToComputeForcesWith()) {
-
+                // std::cout << "before cell neighbours" << std::endl;
+                for (Cell *neighbour: cell->getNeighbourReferences()) { //cell->getNeighboursToComputeForcesWith()) {
+                   // std::cout << " outer force calculation begin" << std::endl;
+                    if (cell->getAlreadyInfluencedBy().contains(neighbour)) continue;
                     for (Particle *neighbour_particle: neighbour->getParticleReferences()) {
                         if (ArrayUtils::L2Norm(p->getX() - neighbour_particle->getX()) > cutoff_radius) continue;
 
@@ -181,14 +204,35 @@ void LinkedCellsContainer::applyPairwiseForces(const std::vector<std::shared_ptr
                             omp_unset_lock(neighbour_particle->getLock());
                         }
                     }
-                   // neighbour->addAlreadyInfluencedBy(cell); // this should be a loop carried dependency
+                    neighbour->addAlreadyInfluencedBy(cell);
+                  //  std::cout << " outer force calculation end" << std::endl;
+                    //     std::cout << "after cell neighbours" << std::endl;
+                    // neighbour->addAlreadyInfluencedBy(cell); // this should be a loop carried dependency
                 }
+
             }
         }
-        deleteHaloParticles();
-        updateCellsParticleReferences();
     }
-#else
+
+/*#pragma omp single
+{*/
+    //std::cout << " deletehalo + update begin" <<
+      //        std::endl;
+
+    deleteHaloParticles();
+
+    updateCellsParticleReferences();
+
+  //  std::cout << " deletehalo + update end" <<
+    //          std::endl;
+//}
+//  std::cout << "reach apply pairwise forces optimized" << std::endl;
+}
+
+
+void LinkedCellsContainer::applyPairwiseForces(const std::vector<std::shared_ptr<PairwiseForceSource>> &force_sources) {
+    /// optimize this for the particle parallelization strategy
+    //std::cout << "apply pairwise forces begin" << std::endl;
     ReflectiveBoundaryType::applyBoundaryConditions(*this);
     OutflowBoundaryType::applyBoundaryConditions(*this);
     PeriodicBoundaryType::applyBoundaryConditions(*this);
@@ -240,8 +284,7 @@ void LinkedCellsContainer::applyPairwiseForces(const std::vector<std::shared_ptr
     // remove the periodic halo particles
     deleteHaloParticles();
     updateCellsParticleReferences();
-   // std::cout << "apply pairwise forces end" << std::endl;
-#endif
+    // std::cout << "apply pairwise forces end" << std::endl;
 }
 
 void LinkedCellsContainer::reserve(size_t n) {
@@ -433,12 +476,12 @@ std::array<double, 3> LinkedCellsContainer::computeSubdomainsPerDimension(int nu
     }
 }
 
-void LinkedCellsContainer::initSubdomains() {
+void LinkedCellsContainer::initSubdomains(int numThreads) {
     //now divide the domain into subdomains depending on the number of threads
-    int numThreads{8}; // 8 threads are the default value
+   /* int numThreads{8}; // 8 threads are the default value
 #ifdef OMP_NUM_THREADS
     numThreads = OMP_NUM_THREADS;
-#endif
+#endif*/
     std::array<double, 3> subdomainsPerDimension = computeSubdomainsPerDimension(numThreads);
     //TODO: what if the amount of subdomains isn't a multiple of the amount of cells --> smaller subdomains
     //TODO: include the halo cells in the subdomain? --> yes
@@ -458,9 +501,10 @@ void LinkedCellsContainer::initSubdomains() {
                 subdomains.emplace(index, new Subdomain(delta_t, gravityConstant, cutoff_radius,
                                                         std::make_unique<LinkedCellsContainer>(
                                                                 *this))); //std::unique_ptr<LinkedCellsContainer>(this)));
+                subdomainsVector.emplace_back(subdomains.at(index));
                 auto lMax = std::min(cellsPerSubdomainX, ((domain_num_cells[0] + 2) - i * cellsPerSubdomainX));
                 auto mMax = std::min(cellsPerSubdomainX, ((domain_num_cells[1] + 2) - i * cellsPerSubdomainY));
-                auto nMax = std::min(cellsPerSubdomainX,((domain_num_cells[2] + 2) - i * cellsPerSubdomainZ));
+                auto nMax = std::min(cellsPerSubdomainX, ((domain_num_cells[2] + 2) - i * cellsPerSubdomainZ));
                 for (int l = 0; l < lMax; ++l) {
                     for (int m = 0; m < mMax; ++m) {
                         for (int n = 0; n < nMax; ++n) {
@@ -652,8 +696,12 @@ void LinkedCellsContainer::deleteHaloParticles() {
     }
 }
 
-std::map<std::array<unsigned int, 3>, Subdomain*> LinkedCellsContainer::getSubdomains() {
+std::map<std::array<unsigned int, 3>, Subdomain *> LinkedCellsContainer::getSubdomains() {
     return subdomains;
+}
+
+std::vector<Subdomain *> LinkedCellsContainer::getSubdomainsVector() {
+    return subdomainsVector;
 }
 
 /*

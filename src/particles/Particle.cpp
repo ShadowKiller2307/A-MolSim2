@@ -110,6 +110,10 @@ const std::array<double, 3> &Particle::getDisplacementToAdd() const {
     return displacement_to_add;
 }
 
+omp_lock_t *Particle::getLock() {
+    return &particleLock;
+}
+
 
 std::ostream &operator<<(std::ostream &stream, Particle &p)
 {

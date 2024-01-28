@@ -14,17 +14,6 @@ int main(int argc, char* argsv[]) {
     SimulationParams params = merge_parameters(params_cli, simulation_arguments);
     params.num_particles = initial_particles.size();
 
-#ifdef OMP_NUM_THREADS
-    omp_set_num_threads(OMP_NUM_THREADS); // set the number of threads to the amount the user specifies
-#endif
-
-#ifdef PARTICLES
-    std::cout << "ifdef particles funktioniert" << std::endl;
-#endif
-
-#ifdef SUBDOMAIN
-    std::cout << "ifdef subdomain funktioniert" << std::endl;
-#endif
     // Initialize simulation
     Simulation simulation{initial_particles, params};
 

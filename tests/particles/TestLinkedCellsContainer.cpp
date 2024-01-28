@@ -207,5 +207,10 @@ TEST(LinkedCellsContainer, AddParticle) {
  * @brief This test should check if the subdomains are instantiated correctly depending on the number of threads
  */
 TEST(LinkedCellsContainer, InstantiateSubdomains) {
+    std::array<double, 3> domain_size = {15.0, 12.0, 1.0};
+    double cutoff_radius = 2.0;
+    LinkedCellsContainer container(domain_size, cutoff_radius);
+    container.initSubdomains(14);
 
+    EXPECT_EQ(container.getSubdomainsVector().size(), 14);
 }

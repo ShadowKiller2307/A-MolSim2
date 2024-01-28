@@ -138,6 +138,8 @@ private:
  */
 const SimulationParams &params;
 
+int strategy = 2;
+
 //    static bool is_strategy_1;
 
 /**
