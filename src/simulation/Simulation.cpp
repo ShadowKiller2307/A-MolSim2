@@ -60,6 +60,7 @@ SimulationOverview Simulation::runSimulation() {
 
     // Notify interceptors that the simulation is about to start
     for (auto& interceptor : params.interceptors) {
+
         (*interceptor).onSimulationStart(*this);
     }
 
