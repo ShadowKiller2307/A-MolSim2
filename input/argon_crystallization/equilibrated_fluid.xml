@@ -26,7 +26,7 @@
             </linkedcells_container>
         </particle_container>
         <forces>
-            <SmoothedLJ rl="1.9" cutOffR="2.3" />
+            <LennardJones/>
         </forces>
         <interceptors>
             <FrameWriter output_format="vtu" fps="24" video_length_s="30" />
