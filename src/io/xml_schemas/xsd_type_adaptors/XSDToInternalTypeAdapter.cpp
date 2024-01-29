@@ -3,6 +3,7 @@
 #include "io/logger/Logger.h"
 #include "physics/pairwiseforces/GravitationalForce.h"
 #include "physics/pairwiseforces/LennardJonesForce.h"
+#include "physics/pairwiseforces/SmoothedLJ.h"
 #include "physics/simpleforces/GlobalDownwardsGravity.h"
 #include "simulation/interceptors/frame_writer/FrameWriterInterceptor.h"
 #include "simulation/interceptors/particle_update_counter/ParticleUpdateCounterInterceptor.h"
@@ -274,6 +275,14 @@ XSDToInternalTypeAdapter::convertToForces(const ForcesType &forces)
 {
     std::vector<std::shared_ptr<SimpleForceSource>> simple_force_sources;
     std::vector<std::shared_ptr<PairwiseForceSource>> pairwise_force_sources;
+
+    /*
+     * if(forces.SmoothLJ()){
+     *  double rl = forces.SmoothLJ()->rl();
+     *  double cutoff = forces.SmoothLJ()->cutoff();
+     *  pairwise_force_sources.push_back(std::make_shared<SmoothedLJ>(rl,cutoff));
+     * }
+     */
 
     if (forces.LennardJones())
     {

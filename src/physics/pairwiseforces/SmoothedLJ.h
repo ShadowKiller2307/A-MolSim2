@@ -3,6 +3,9 @@
 #include "physics/pairwiseforces/PairwiseForceSource.h"
 
 class SmoothedLJ : public PairwiseForceSource{
+
+    SmoothedLJ(double rl, double cutOffRadius);
+
     /**
      *@brief calculates the smoothed LJ force
      *
@@ -17,5 +20,9 @@ class SmoothedLJ : public PairwiseForceSource{
      * @return "Smoothed LJ"
      */
     explicit operator std::string() const override;
+
+private:
+    double _r_l;
+    double _cutOffRadius;
 };
 

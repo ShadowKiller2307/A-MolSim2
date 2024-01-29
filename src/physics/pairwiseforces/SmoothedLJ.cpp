@@ -5,8 +5,8 @@ std::array<double, 3UL> SmoothedLJ::calculateForce(Particle &p, Particle &q) con
 {
     // based on the distance between particles p and j a different formula
     // for the forces will be applied
-    double cutoffRadius = 2.3; // TODO change later
-    double r_l = 1.9;
+    double cutoffRadius = _cutOffRadius;
+    double r_l = _r_l;
 
     const auto displacement = q.getX() - p.getX();
     const double distancePQ = ArrayUtils::L2Norm(displacement);
@@ -39,4 +39,9 @@ std::array<double, 3UL> SmoothedLJ::calculateForce(Particle &p, Particle &q) con
 SmoothedLJ::operator std::string() const
 {
     return "Smoothed LJ";
+}
+
+SmoothedLJ::SmoothedLJ(double rl,double cutOffRadius) {
+    _r_l = rl;
+    _cutOffRadius = cutOffRadius;
 }
