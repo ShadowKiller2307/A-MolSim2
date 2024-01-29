@@ -638,6 +638,7 @@ class ThermostatInterceptorType;
 class DiffusionInterceptorType;
 class SimulationInterceptorsType;
 class LennardJonesType;
+class SmoothLJType;
 class GravitationalType;
 class GlobalGravityType;
 class ForcesType;
@@ -6967,6 +6968,196 @@ class LennardJonesType: public ::xml_schema::type
 };
 
 /**
+ * @brief Class corresponding to the %SmoothLJType schema type.
+ *
+ * @nosubgrouping
+ */
+class SmoothLJType: public ::xml_schema::type
+{
+  public:
+  /**
+   * @name rl
+   *
+   * @brief Accessor and modifier functions for the %rl
+   * required attribute.
+   */
+  //@{
+
+  /**
+   * @brief Attribute type.
+   */
+  typedef ::xml_schema::double_ rl_type;
+
+  /**
+   * @brief Attribute traits type.
+   */
+  typedef ::xsd::cxx::tree::traits< rl_type, char, ::xsd::cxx::tree::schema_type::double_ > rl_traits;
+
+  /**
+   * @brief Return a read-only (constant) reference to the attribute.
+   *
+   * @return A constant reference to the attribute.
+   */
+  const rl_type&
+  rl () const;
+
+  /**
+   * @brief Return a read-write reference to the attribute.
+   *
+   * @return A reference to the attribute.
+   */
+  rl_type&
+  rl ();
+
+  /**
+   * @brief Set the attribute value.
+   *
+   * @param x A new value to set.
+   *
+   * This function makes a copy of its argument and sets it as
+   * the new value of the attribute.
+   */
+  void
+  rl (const rl_type& x);
+
+  //@}
+
+  /**
+   * @name cutOffR
+   *
+   * @brief Accessor and modifier functions for the %cutOffR
+   * required attribute.
+   */
+  //@{
+
+  /**
+   * @brief Attribute type.
+   */
+  typedef ::xml_schema::double_ cutOffR_type;
+
+  /**
+   * @brief Attribute traits type.
+   */
+  typedef ::xsd::cxx::tree::traits< cutOffR_type, char, ::xsd::cxx::tree::schema_type::double_ > cutOffR_traits;
+
+  /**
+   * @brief Return a read-only (constant) reference to the attribute.
+   *
+   * @return A constant reference to the attribute.
+   */
+  const cutOffR_type&
+  cutOffR () const;
+
+  /**
+   * @brief Return a read-write reference to the attribute.
+   *
+   * @return A reference to the attribute.
+   */
+  cutOffR_type&
+  cutOffR ();
+
+  /**
+   * @brief Set the attribute value.
+   *
+   * @param x A new value to set.
+   *
+   * This function makes a copy of its argument and sets it as
+   * the new value of the attribute.
+   */
+  void
+  cutOffR (const cutOffR_type& x);
+
+  //@}
+
+  /**
+   * @name Constructors
+   */
+  //@{
+
+  /**
+   * @brief Create an instance from the ultimate base and
+   * initializers for required elements and attributes.
+   */
+  SmoothLJType (const rl_type&,
+                const cutOffR_type&);
+
+  /**
+   * @brief Create an instance from a DOM element.
+   *
+   * @param e A DOM element to extract the data from.
+   * @param f Flags to create the new instance with.
+   * @param c A pointer to the object that will contain the new
+   * instance.
+   */
+  SmoothLJType (const ::xercesc::DOMElement& e,
+                ::xml_schema::flags f = 0,
+                ::xml_schema::container* c = 0);
+
+  /**
+   * @brief Copy constructor.
+   *
+   * @param x An instance to make a copy of.
+   * @param f Flags to create the copy with.
+   * @param c A pointer to the object that will contain the copy.
+   *
+   * For polymorphic object models use the @c _clone function instead.
+   */
+  SmoothLJType (const SmoothLJType& x,
+                ::xml_schema::flags f = 0,
+                ::xml_schema::container* c = 0);
+
+  /**
+   * @brief Copy the instance polymorphically.
+   *
+   * @param f Flags to create the copy with.
+   * @param c A pointer to the object that will contain the copy.
+   * @return A pointer to the dynamically allocated copy.
+   *
+   * This function ensures that the dynamic type of the instance is
+   * used for copying and should be used for polymorphic object
+   * models instead of the copy constructor.
+   */
+  virtual SmoothLJType*
+  _clone (::xml_schema::flags f = 0,
+          ::xml_schema::container* c = 0) const;
+
+  /**
+   * @brief Copy assignment operator.
+   *
+   * @param x An instance to make a copy of.
+   * @return A reference to itself.
+   *
+   * For polymorphic object models use the @c _clone function instead.
+   */
+  SmoothLJType&
+  operator= (const SmoothLJType& x);
+
+  //@}
+
+  /**
+   * @brief Destructor.
+   */
+  virtual 
+  ~SmoothLJType ();
+
+  // Implementation.
+  //
+
+  //@cond
+
+  protected:
+  void
+  parse (::xsd::cxx::xml::dom::parser< char >&,
+         ::xml_schema::flags);
+
+  protected:
+  ::xsd::cxx::tree::one< rl_type > rl_;
+  ::xsd::cxx::tree::one< cutOffR_type > cutOffR_;
+
+  //@endcond
+};
+
+/**
  * @brief Class corresponding to the %GravitationalType schema type.
  *
  * @nosubgrouping
@@ -7291,6 +7482,82 @@ class ForcesType: public ::xml_schema::type
   //@}
 
   /**
+   * @name SmoothLJ
+   *
+   * @brief Accessor and modifier functions for the %SmoothLJ
+   * optional element.
+   */
+  //@{
+
+  /**
+   * @brief Element type.
+   */
+  typedef ::SmoothLJType SmoothLJ_type;
+
+  /**
+   * @brief Element optional container type.
+   */
+  typedef ::xsd::cxx::tree::optional< SmoothLJ_type > SmoothLJ_optional;
+
+  /**
+   * @brief Element traits type.
+   */
+  typedef ::xsd::cxx::tree::traits< SmoothLJ_type, char > SmoothLJ_traits;
+
+  /**
+   * @brief Return a read-only (constant) reference to the element
+   * container.
+   *
+   * @return A constant reference to the optional container.
+   */
+  const SmoothLJ_optional&
+  SmoothLJ () const;
+
+  /**
+   * @brief Return a read-write reference to the element container.
+   *
+   * @return A reference to the optional container.
+   */
+  SmoothLJ_optional&
+  SmoothLJ ();
+
+  /**
+   * @brief Set the element value.
+   *
+   * @param x A new value to set.
+   *
+   * This function makes a copy of its argument and sets it as
+   * the new value of the element.
+   */
+  void
+  SmoothLJ (const SmoothLJ_type& x);
+
+  /**
+   * @brief Set the element value.
+   *
+   * @param x An optional container with the new value to set.
+   *
+   * If the value is present in @a x then this function makes a copy 
+   * of this value and sets it as the new value of the element.
+   * Otherwise the element container is set the 'not present' state.
+   */
+  void
+  SmoothLJ (const SmoothLJ_optional& x);
+
+  /**
+   * @brief Set the element value without copying.
+   *
+   * @param p A new value to use.
+   *
+   * This function will try to use the passed value directly instead
+   * of making a copy.
+   */
+  void
+  SmoothLJ (::std::unique_ptr< SmoothLJ_type > p);
+
+  //@}
+
+  /**
    * @name Gravitational
    *
    * @brief Accessor and modifier functions for the %Gravitational
@@ -7524,6 +7791,7 @@ class ForcesType: public ::xml_schema::type
 
   protected:
   LennardJones_optional LennardJones_;
+  SmoothLJ_optional SmoothLJ_;
   Gravitational_optional Gravitational_;
   GlobalDownwardsGravity_optional GlobalDownwardsGravity_;
 
@@ -8362,6 +8630,9 @@ operator<< (::xercesc::DOMAttr&, const LennardJonesType&);
 void
 operator<< (::xml_schema::list_stream&,
             const LennardJonesType&);
+
+void
+operator<< (::xercesc::DOMElement&, const SmoothLJType&);
 
 void
 operator<< (::xercesc::DOMElement&, const GravitationalType&);

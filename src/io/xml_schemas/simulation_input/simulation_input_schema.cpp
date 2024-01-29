@@ -1711,6 +1711,46 @@ Diffusion (::std::unique_ptr< Diffusion_type > x)
 //
 
 
+// SmoothLJType
+//
+
+const SmoothLJType::rl_type& SmoothLJType::
+rl () const
+{
+  return this->rl_.get ();
+}
+
+SmoothLJType::rl_type& SmoothLJType::
+rl ()
+{
+  return this->rl_.get ();
+}
+
+void SmoothLJType::
+rl (const rl_type& x)
+{
+  this->rl_.set (x);
+}
+
+const SmoothLJType::cutOffR_type& SmoothLJType::
+cutOffR () const
+{
+  return this->cutOffR_.get ();
+}
+
+SmoothLJType::cutOffR_type& SmoothLJType::
+cutOffR ()
+{
+  return this->cutOffR_.get ();
+}
+
+void SmoothLJType::
+cutOffR (const cutOffR_type& x)
+{
+  this->cutOffR_.set (x);
+}
+
+
 // GravitationalType
 //
 
@@ -1768,6 +1808,36 @@ void ForcesType::
 LennardJones (::std::unique_ptr< LennardJones_type > x)
 {
   this->LennardJones_.set (std::move (x));
+}
+
+const ForcesType::SmoothLJ_optional& ForcesType::
+SmoothLJ () const
+{
+  return this->SmoothLJ_;
+}
+
+ForcesType::SmoothLJ_optional& ForcesType::
+SmoothLJ ()
+{
+  return this->SmoothLJ_;
+}
+
+void ForcesType::
+SmoothLJ (const SmoothLJ_type& x)
+{
+  this->SmoothLJ_.set (x);
+}
+
+void ForcesType::
+SmoothLJ (const SmoothLJ_optional& x)
+{
+  this->SmoothLJ_ = x;
+}
+
+void ForcesType::
+SmoothLJ (::std::unique_ptr< SmoothLJ_type > x)
+{
+  this->SmoothLJ_.set (std::move (x));
 }
 
 const ForcesType::Gravitational_optional& ForcesType::
@@ -5020,6 +5090,106 @@ LennardJonesType::
 {
 }
 
+// SmoothLJType
+//
+
+SmoothLJType::
+SmoothLJType (const rl_type& rl,
+              const cutOffR_type& cutOffR)
+: ::xml_schema::type (),
+  rl_ (rl, this),
+  cutOffR_ (cutOffR, this)
+{
+}
+
+SmoothLJType::
+SmoothLJType (const SmoothLJType& x,
+              ::xml_schema::flags f,
+              ::xml_schema::container* c)
+: ::xml_schema::type (x, f, c),
+  rl_ (x.rl_, f, this),
+  cutOffR_ (x.cutOffR_, f, this)
+{
+}
+
+SmoothLJType::
+SmoothLJType (const ::xercesc::DOMElement& e,
+              ::xml_schema::flags f,
+              ::xml_schema::container* c)
+: ::xml_schema::type (e, f | ::xml_schema::flags::base, c),
+  rl_ (this),
+  cutOffR_ (this)
+{
+  if ((f & ::xml_schema::flags::base) == 0)
+  {
+    ::xsd::cxx::xml::dom::parser< char > p (e, false, false, true);
+    this->parse (p, f);
+  }
+}
+
+void SmoothLJType::
+parse (::xsd::cxx::xml::dom::parser< char >& p,
+       ::xml_schema::flags f)
+{
+  while (p.more_attributes ())
+  {
+    const ::xercesc::DOMAttr& i (p.next_attribute ());
+    const ::xsd::cxx::xml::qualified_name< char > n (
+      ::xsd::cxx::xml::dom::name< char > (i));
+
+    if (n.name () == "rl" && n.namespace_ ().empty ())
+    {
+      this->rl_.set (rl_traits::create (i, f, this));
+      continue;
+    }
+
+    if (n.name () == "cutOffR" && n.namespace_ ().empty ())
+    {
+      this->cutOffR_.set (cutOffR_traits::create (i, f, this));
+      continue;
+    }
+  }
+
+  if (!rl_.present ())
+  {
+    throw ::xsd::cxx::tree::expected_attribute< char > (
+      "rl",
+      "");
+  }
+
+  if (!cutOffR_.present ())
+  {
+    throw ::xsd::cxx::tree::expected_attribute< char > (
+      "cutOffR",
+      "");
+  }
+}
+
+SmoothLJType* SmoothLJType::
+_clone (::xml_schema::flags f,
+        ::xml_schema::container* c) const
+{
+  return new class SmoothLJType (*this, f, c);
+}
+
+SmoothLJType& SmoothLJType::
+operator= (const SmoothLJType& x)
+{
+  if (this != &x)
+  {
+    static_cast< ::xml_schema::type& > (*this) = x;
+    this->rl_ = x.rl_;
+    this->cutOffR_ = x.cutOffR_;
+  }
+
+  return *this;
+}
+
+SmoothLJType::
+~SmoothLJType ()
+{
+}
+
 // GravitationalType
 //
 
@@ -5163,6 +5333,7 @@ ForcesType::
 ForcesType ()
 : ::xml_schema::type (),
   LennardJones_ (this),
+  SmoothLJ_ (this),
   Gravitational_ (this),
   GlobalDownwardsGravity_ (this)
 {
@@ -5174,6 +5345,7 @@ ForcesType (const ForcesType& x,
             ::xml_schema::container* c)
 : ::xml_schema::type (x, f, c),
   LennardJones_ (x.LennardJones_, f, this),
+  SmoothLJ_ (x.SmoothLJ_, f, this),
   Gravitational_ (x.Gravitational_, f, this),
   GlobalDownwardsGravity_ (x.GlobalDownwardsGravity_, f, this)
 {
@@ -5185,6 +5357,7 @@ ForcesType (const ::xercesc::DOMElement& e,
             ::xml_schema::container* c)
 : ::xml_schema::type (e, f | ::xml_schema::flags::base, c),
   LennardJones_ (this),
+  SmoothLJ_ (this),
   Gravitational_ (this),
   GlobalDownwardsGravity_ (this)
 {
@@ -5215,6 +5388,20 @@ parse (::xsd::cxx::xml::dom::parser< char >& p,
       if (!this->LennardJones_)
       {
         this->LennardJones_.set (::std::move (r));
+        continue;
+      }
+    }
+
+    // SmoothLJ
+    //
+    if (n.name () == "SmoothLJ" && n.namespace_ ().empty ())
+    {
+      ::std::unique_ptr< SmoothLJ_type > r (
+        SmoothLJ_traits::create (i, f, this));
+
+      if (!this->SmoothLJ_)
+      {
+        this->SmoothLJ_.set (::std::move (r));
         continue;
       }
     }
@@ -5265,6 +5452,7 @@ operator= (const ForcesType& x)
   {
     static_cast< ::xml_schema::type& > (*this) = x;
     this->LennardJones_ = x.LennardJones_;
+    this->SmoothLJ_ = x.SmoothLJ_;
     this->Gravitational_ = x.Gravitational_;
     this->GlobalDownwardsGravity_ = x.GlobalDownwardsGravity_;
   }
@@ -6866,6 +7054,34 @@ operator<< (::xml_schema::list_stream&,
 }
 
 void
+operator<< (::xercesc::DOMElement& e, const SmoothLJType& i)
+{
+  e << static_cast< const ::xml_schema::type& > (i);
+
+  // rl
+  //
+  {
+    ::xercesc::DOMAttr& a (
+      ::xsd::cxx::xml::dom::create_attribute (
+        "rl",
+        e));
+
+    a << ::xml_schema::as_double(i.rl ());
+  }
+
+  // cutOffR
+  //
+  {
+    ::xercesc::DOMAttr& a (
+      ::xsd::cxx::xml::dom::create_attribute (
+        "cutOffR",
+        e));
+
+    a << ::xml_schema::as_double(i.cutOffR ());
+  }
+}
+
+void
 operator<< (::xercesc::DOMElement& e, const GravitationalType& i)
 {
   e << static_cast< const ::xml_schema::type& > (i);
@@ -6914,6 +7130,18 @@ operator<< (::xercesc::DOMElement& e, const ForcesType& i)
         e));
 
     s << *i.LennardJones ();
+  }
+
+  // SmoothLJ
+  //
+  if (i.SmoothLJ ())
+  {
+    ::xercesc::DOMElement& s (
+      ::xsd::cxx::xml::dom::create_element (
+        "SmoothLJ",
+        e));
+
+    s << *i.SmoothLJ ();
   }
 
   // Gravitational
