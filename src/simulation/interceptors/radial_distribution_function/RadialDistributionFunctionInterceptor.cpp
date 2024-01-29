@@ -6,17 +6,20 @@
 #include "utils/ArrayUtils.h"
 
 RadialDistributionFunctionInterceptor::RadialDistributionFunctionInterceptor(double bin_width, size_t sample_every_x_percent)
-    : bin_width(bin_width), sample_every_x_percent(sample_every_x_percent) {}
+    : bin_width(bin_width), sample_every_x_percent(sample_every_x_percent) {
+    test_mode = false;
+}
 
 void RadialDistributionFunctionInterceptor::onSimulationStart(Simulation& simulation) {
     csv_writer = std::make_unique<CSVWriter>(simulation.params.output_dir_path / "radial_distribution_function.csv");
 
     //csv_writer->initialize({"iteration", "bin_index (w= " + std::to_string(bin_width) + ")", "samples", "local_density"});
-    csv_writer->initialize({"iteration", "bin_mid_point", "local_density"});
+    csv_writer->initialize({"iteration", "bin_index", "local_density"});
     auto expected_iterations = static_cast<size_t>(std::ceil(simulation.params.end_time / simulation.params.delta_t) + 1);
     SimulationInterceptor::every_nth_iteration = std::max(1, static_cast<int>(sample_every_x_percent * expected_iterations / 100));
     //SimulationInterceptor::every_nth_iteration = 5000;
     samples_count = 0;
+
 }
 
 void RadialDistributionFunctionInterceptor::operator()(size_t iteration, Simulation& simulation) {
@@ -41,8 +44,11 @@ void RadialDistributionFunctionInterceptor::operator()(size_t iteration, Simulat
 
     for (auto& [bin_index, samples] : samples_per_bin_index) {
         double local_density = calculateLocalDensity(samples, bin_index);
+        if(test_mode){
+            index_and_density_for_test_mode[bin_index] = local_density;
+        }
         double bin_mid_point = static_cast<double>(bin_index) * bin_width + bin_width / 2.0;
-        csv_writer->writeRow({iteration, bin_mid_point, local_density});
+        csv_writer->writeRow({iteration, bin_index, local_density});
         //csv_writer->writeRow({iteration, bin_index, samples, calculateLocalDensity(samples, bin_index)});
     }
 }
@@ -68,4 +74,12 @@ double RadialDistributionFunctionInterceptor::calculateLocalDensity(size_t N, si
     double bin_volume = (4.0 / 3.0) * M_PI * (std::pow(bin_end, 3) - std::pow(bin_start, 3));
 
     return static_cast<double>(N) / bin_volume;
+}
+
+void RadialDistributionFunctionInterceptor::setTestMode(bool mode) {
+    test_mode = mode;
+}
+
+std::map<size_t, double> RadialDistributionFunctionInterceptor::getDensitiesForTestMode() {
+    return index_and_density_for_test_mode;
 }

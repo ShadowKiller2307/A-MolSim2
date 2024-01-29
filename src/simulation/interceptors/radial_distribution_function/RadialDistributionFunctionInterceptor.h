@@ -53,11 +53,17 @@ class RadialDistributionFunctionInterceptor : public SimulationInterceptor {
      */
     void logSummary(int depth) const override;
 
-    double calculateLocalDensity(size_t N, size_t bin_index) const;
+    [[nodiscard]] double calculateLocalDensity(size_t N, size_t bin_index) const;
+
+    void setTestMode(bool mode);
+
+    std::map<size_t,double> getDensitiesForTestMode();
 
    private:
     double bin_width;
     size_t sample_every_x_percent;
     std::unique_ptr<CSVWriter> csv_writer;
     size_t samples_count;
+    bool test_mode;
+    std::map<size_t,double> index_and_density_for_test_mode;
 };

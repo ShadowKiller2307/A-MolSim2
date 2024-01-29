@@ -11,9 +11,9 @@
         <particle_container>
             <linkedcells_container>
                 <domain_size>
-                    <x>6</x>
-                    <y>6</y>
-                    <z>6</z>
+                    <x>10</x>
+                    <y>10</y>
+                    <z>10</z>
                 </domain_size>
                 <cutoff_radius>3.0</cutoff_radius>
                 <boundary_conditions>
@@ -36,23 +36,41 @@
 
 
     <particle_source>
-    <single_particle_spawner>
-        <position>
-            <x>5.0</x>
-            <y>2.0</y>
-            <z>2.0</z>
-        </position>
-        <temperature>4.0</temperature>
-        <mass>1.0</mass>
-        <velocity>
-            <x>5.0</x>
-            <y>0.0</y>
-            <z>0.0</z>
-        </velocity>
-        <type>0</type>
-        <epsilon>1.0</epsilon>
-        <sigma>1.0</sigma>
-    </single_particle_spawner>
+        <single_particle_spawner>
+            <position>
+                <x>5.0</x>
+                <y>2.0</y>
+                <z>2.0</z>
+            </position>
+            <temperature>4.0</temperature>
+            <mass>1.0</mass>
+            <velocity>
+                <x>5.0</x>
+                <y>0.0</y>
+                <z>0.0</z>
+            </velocity>
+            <type>0</type>
+            <epsilon>1.0</epsilon>
+            <sigma>1.0</sigma>
+        </single_particle_spawner>
+
+        <single_particle_spawner>
+            <position>
+                <x>7.0</x>
+                <y>3.2</y>
+                <z>4.6</z>
+            </position>
+            <temperature>4.0</temperature>
+            <mass>1.0</mass>
+            <velocity>
+                <x>0.0</x>
+                <y>0.0</y>
+                <z>0.0</z>
+            </velocity>
+            <type>0</type>
+            <epsilon>1.0</epsilon>
+            <sigma>1.0</sigma>
+        </single_particle_spawner>
 
     </particle_source>
 

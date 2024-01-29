@@ -1,5 +1,4 @@
 #include "gtest/gtest.h"
-#include "io/logger/Logger.h"
 #include "particles/containers/linkedcells/LinkedCellsContainer.h"
 #include "simulation/Simulation.h"
 #include "simulation/SimulationUtils.h"
@@ -8,11 +7,11 @@
 #include "io/input/xml/XMLFileReader.h"
 
 
-using BC = LinkedCellsContainer::BoundaryCondition;
+
 
 /// @brief Test if the variance is calculated correctly for one particle after interacting with a periodic boundary
 TEST(Diffusion,ProperVarianceAfterPeriodic){
-   Logger::logger->set_level(spdlog::level::err);
+
 
 
     XMLFileReader file_reader(true);

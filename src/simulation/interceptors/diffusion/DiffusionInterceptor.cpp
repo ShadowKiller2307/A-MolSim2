@@ -29,8 +29,7 @@ void DiffusionInterceptor::operator()(size_t iteration, Simulation& simulation) 
     size_t i = 0;
     for (auto & particle : *simulation.particle_container) {
         std::array<double,3> displacement = particle.getX()-previous_references.at(i);
-        std::cout<<"Previous reference: "<<previous_references.at(i)<<std::endl;
-        std::cout<<"Displacement to add: "<<particle.getDisplacementToAdd()<<std::endl;
+
 
         if(test_mode){
             displacement.at(0)+=6;
