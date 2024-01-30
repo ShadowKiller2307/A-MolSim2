@@ -355,7 +355,7 @@ std::string LinkedCellsContainer::boundaryConditionToString(const BoundaryCondit
         default:
             return "Unknown";
     }
-};
+}
 
 /*
     Private methods of the LinkedCellsContainer
@@ -836,7 +836,7 @@ void LinkedCellsContainer::parallel_step(const std::vector<std::shared_ptr<Simpl
             for (auto& cell : cells) {
                 for (auto* p : cell.getParticleReferences()) {
                     const std::array<double, 3> new_x =
-                            p->getX() + delta_t * p->getV() + (delta_t * delta_t / (2 * p.getM())) * p.getF();
+                            p->getX() + delta_t * p->getV() + (delta_t * delta_t / (2 * p->getM())) * p->getF();
                     p->setX(new_x);
 
                     // reset forces
@@ -872,8 +872,8 @@ void LinkedCellsContainer::parallel_step(const std::vector<std::shared_ptr<Simpl
                             omp_set_lock(neighbour->getLock());
 
                         for (Particle *neighbour_particle: neighbour->getParticleReferences()) {
-                            if (ArrayUtils::L2Norm(p->getX() - neighbour_particle->getX()) > cutoffRadius) continue;
-                            for (const auto &force_source: force_sources) {
+                            if (ArrayUtils::L2Norm(p->getX() - neighbour_particle->getX()) > cutoff_radius) continue;
+                            for (const auto &force_source: pairwise_force_sources) {
                                 std::array<double, 3> force = force_source->calculateForce(*p, *neighbour_particle);
                                 p->setF(p->getF() + force);
                                 neighbour_particle->setF(neighbour_particle->getF() - force);
