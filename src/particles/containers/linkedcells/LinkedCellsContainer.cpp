@@ -14,9 +14,11 @@
 /*
     Methods of the LinkedCellsContainer
 */
-LinkedCellsContainer::LinkedCellsContainer(const std::array<double, 3> &_domain_size, double _cutoff_radius, const std::vector<std::shared_ptr<PairwiseForceSource>>& pairwiseForceSources,
+LinkedCellsContainer::LinkedCellsContainer(const std::array<double, 3> &_domain_size, double _cutoff_radius,
+                                           const std::vector<std::shared_ptr<PairwiseForceSource>> &pairwiseForceSources,
                                            const std::array<BoundaryCondition, 6> &_boundary_types, int _n)
-        : domain_size(_domain_size), cutoff_radius(_cutoff_radius), pairwise_force_sources(pairwiseForceSources), boundary_types(_boundary_types) {
+        : domain_size(_domain_size), cutoff_radius(_cutoff_radius), pairwise_force_sources(pairwiseForceSources),
+          boundary_types(_boundary_types) {
 
     // calculate the number of cells in each dimension
     domain_num_cells = {std::max(static_cast<int>(std::floor(_domain_size[0] / cutoff_radius)), 1),
@@ -127,7 +129,7 @@ LinkedCellsContainer::applySimpleForces(const std::vector<std::shared_ptr<Simple
 //TODO: there is a deadlock inside this function
 void LinkedCellsContainer::applyPairwiseForcesOptimized(
         const std::vector<std::shared_ptr<PairwiseForceSource>> &force_sources) {
-      //  std::cout << "reach begin of apply pairwise forces optimized" << std::endl;
+    //  std::cout << "reach begin of apply pairwise forces optimized" << std::endl;
 /*#pragma omp single
     {*/
     ReflectiveBoundaryType::applyBoundaryConditions(*this);
@@ -162,7 +164,7 @@ void LinkedCellsContainer::applyPairwiseForcesOptimized(
 
                 Particle *p = cell->getParticleReferences().at(i);
                 for (size_t j = i + 1; j < amountOfParticles; ++j) {
-                  //  std::cout << " inner force calculation begin" << std::endl;
+                    //  std::cout << " inner force calculation begin" << std::endl;
                     if (j >= cell->getParticleReferences().size()) {
                         throw std::out_of_range("Wrong particle access");
                     }
@@ -180,9 +182,9 @@ void LinkedCellsContainer::applyPairwiseForcesOptimized(
                     //std::cout << " inner force calculation end" << std::endl;
                 }
                 // std::cout << "before cell neighbours" << std::endl;
-                for (Cell *neighbour:  cell->getNeighboursToComputeForcesWith()) {
-                   // std::cout << " outer force calculation begin" << std::endl;
-                 //   if (cell->getAlreadyInfluencedBy().contains(neighbour)) continue;
+                for (Cell *neighbour: cell->getNeighboursToComputeForcesWith()) {
+                    // std::cout << " outer force calculation begin" << std::endl;
+                    //   if (cell->getAlreadyInfluencedBy().contains(neighbour)) continue;
                     for (Particle *neighbour_particle: neighbour->getParticleReferences()) {
                         if (ArrayUtils::L2Norm(p->getX() - neighbour_particle->getX()) > cutoff_radius) continue;
 
@@ -196,8 +198,8 @@ void LinkedCellsContainer::applyPairwiseForcesOptimized(
                             omp_unset_lock(neighbour_particle->getLock());
                         }
                     }
-                  /*  neighbour->addAlreadyInfluencedBy(cell);*/
-                  //  std::cout << " outer force calculation end" << std::endl;
+                    /*  neighbour->addAlreadyInfluencedBy(cell);*/
+                    //  std::cout << " outer force calculation end" << std::endl;
                     //     std::cout << "after cell neighbours" << std::endl;
                     // neighbour->addAlreadyInfluencedBy(cell); // this should be a loop carried dependency
                 }
@@ -208,13 +210,13 @@ void LinkedCellsContainer::applyPairwiseForcesOptimized(
 /*#pragma omp single
 {*/
     //std::cout << " deletehalo + update begin" <<
-      //        std::endl;
+    //        std::endl;
     deleteHaloParticles();
     updateCellsParticleReferences();
-  //  std::cout << " deletehalo + update end" <<
+    //  std::cout << " deletehalo + update end" <<
     //          std::endl;
 //}
- // std::cout << "reach end of apply pairwise forces optimized" << std::endl;
+    // std::cout << "reach end of apply pairwise forces optimized" << std::endl;
 }
 
 
@@ -430,7 +432,7 @@ std::array<double, 3> LinkedCellsContainer::computeSubdomainsPerDimension(int nu
     std::array<int, 8> numThreadOptions{1, 2, 4, 8, 14, 16, 28, 56};
     auto numDomains = 1;
     for (int i = 0; i < 8; ++i) {
-        if (numThreads <= numThreadOptions[i] && numThreads > numThreadOptions[i-1]) {
+        if (numThreads <= numThreadOptions[i] && numThreads > numThreadOptions[i - 1]) {
             numDomains = numThreadOptions[i];
         }
     }
@@ -463,10 +465,10 @@ std::array<double, 3> LinkedCellsContainer::computeSubdomainsPerDimension(int nu
 
 void LinkedCellsContainer::initSubdomains(int numThreads) {
     //now divide the domain into subdomains depending on the number of threads
-   /* int numThreads{8}; // 8 threads are the default value
-#ifdef OMP_NUM_THREADS
-    numThreads = OMP_NUM_THREADS;
-#endif*/
+    /* int numThreads{8}; // 8 threads are the default value
+ #ifdef OMP_NUM_THREADS
+     numThreads = OMP_NUM_THREADS;
+ #endif*/
     std::cout << "numThreads" << numThreads << std::endl;
     std::array<double, 3> subdomainsPerDimension = computeSubdomainsPerDimension(numThreads);
     std::cout << "Subdomains per dimension: " << subdomainsPerDimension << std::endl;
@@ -489,37 +491,36 @@ void LinkedCellsContainer::initSubdomains(int numThreads) {
     for (unsigned int i = 0; i < subdomainsPerDimension[0]; ++i) {
         for (unsigned int j = 0; j < subdomainsPerDimension[1]; ++j) {
             for (unsigned int k = 0; k < subdomainsPerDimension[2]; ++k) {
-               // std::array<unsigned int, 3> index{i, j, k};
-              /*  subdomains.emplace(index, new Subdomain(delta_t, gravityConstant, cutoff_radius,
-                                                        std::make_unique<LinkedCellsContainer>(
-                                                                *this))); //std::unique_ptr<LinkedCellsContainer>(this)));
-                subdomainsVector.emplace_back(subdomains.at(index));*/
-                subdomainsVector.emplace_back(new Subdomain(delta_t, gravityConstant, cutoff_radius,
-                                                            std::make_unique<LinkedCellsContainer>(*this)));
-               // std::cout << "after subdomains vector init" << std::endl;
-                auto index = subdomainsVector.size()-1;
+                // std::array<unsigned int, 3> index{i, j, k};
+                /*  subdomains.emplace(index, new Subdomain(delta_t, gravityConstant, cutoff_radius,
+                                                          std::make_unique<LinkedCellsContainer>(
+                                                                  *this))); //std::unique_ptr<LinkedCellsContainer>(this)));
+                  subdomainsVector.emplace_back(subdomains.at(index));*/
+                subdomainsVector.emplace_back(new Subdomain(delta_t, gravityConstant, cutoff_radius));
+                // std::cout << "after subdomains vector init" << std::endl;
+                auto index = subdomainsVector.size() - 1;
                 auto lMax = std::min(cellsPerSubdomainX, ((domain_num_cells[0] + 2) - i * cellsPerSubdomainX));
                 auto mMax = std::min(cellsPerSubdomainY, ((domain_num_cells[1] + 2) - j * cellsPerSubdomainY));
                 auto nMax = std::min(cellsPerSubdomainZ, ((domain_num_cells[2] + 2) - k * cellsPerSubdomainZ));
-             /*   std::cout << "lMax" << lMax << std::endl;
-                std::cout << "mMax" << mMax << std::endl;
-                std::cout << "nMax" << nMax << std::endl;*/
+                /*   std::cout << "lMax" << lMax << std::endl;
+                   std::cout << "mMax" << mMax << std::endl;
+                   std::cout << "nMax" << nMax << std::endl;*/
                 for (int l = 0; l < lMax; ++l) {
                     for (int m = 0; m < mMax; ++m) {
                         for (int n = 0; n < nMax; ++n) {
                             // case distinction whether it is a cell at subdomain border or not
                             // for the addCell method
-                        /*    std::cout << "cellCoordX: " << i * subdomainsPerDimension[0] + l << std::endl;
-                            std::cout << "cellCoordY: " << j * subdomainsPerDimension[1] + m << std::endl;
-                            std::cout << "cellCoordZ: " << k * subdomainsPerDimension[2] + n << std::endl;*/
+                            /*    std::cout << "cellCoordX: " << i * subdomainsPerDimension[0] + l << std::endl;
+                                std::cout << "cellCoordY: " << j * subdomainsPerDimension[1] + m << std::endl;
+                                std::cout << "cellCoordZ: " << k * subdomainsPerDimension[2] + n << std::endl;*/
 
-                          //  std::cout<<"Index: "<<index<<"\n";
+                            //  std::cout<<"Index: "<<index<<"\n";
                             if (l == 0 || l == lMax - 1 || m == 0 || m == mMax - 1 ||
                                 n == 0 || n == nMax - 1) {
                                 int cellIndex = cellCoordToCellIndex(i * cellsPerSubdomainX + l - 1,
-                                                                 j * cellsPerSubdomainY + m - 1,
-                                k * cellsPerSubdomainZ + n - 1);
-                              //  std::cout<<"CellIndex: "<<cellIndex<<"\n";
+                                                                     j * cellsPerSubdomainY + m - 1,
+                                                                     k * cellsPerSubdomainZ + n - 1);
+                                //  std::cout<<"CellIndex: "<<cellIndex<<"\n";
                                 subdomainsVector.at(index)->addCell(true, &cells.at(
                                         cellIndex));
                             } else {
@@ -529,21 +530,14 @@ void LinkedCellsContainer::initSubdomains(int numThreads) {
                                                              k * cellsPerSubdomainZ + n - 1)));
                             }
                         }
-                        /*
-                         * int LinkedCellsContainer::cellCoordToCellIndex(int cx, int cy, int cz) const {
-                           if (cx < -1 || cx > domain_num_cells[0] || cy < -1 || cy > domain_num_cells[1] || cz < -1 ||
-                            cz > domain_num_cells[2]) {
-                            return -1;
-                            }
-                        return (cx + 1) * (domain_num_cells[1] + 2) * (domain_num_cells[2] + 2) + (cy + 1) * (domain_num_cells[2] + 2) +
-                        (cz + 1);
-                        }
-                         */
                     }
                 }
             }
         }
     }
+ /*   for (int i = 0; i < subdomainsVector.size(); ++i) {
+        std::cout << subdomainsVector.at(i)->subdomainCells.size() << std::endl;
+    }*/
 }
 
 void LinkedCellsContainer::initCellNeighbourReferences() {
@@ -593,27 +587,6 @@ void LinkedCellsContainer::initCellNeighbourReferences() {
 }
 
 void LinkedCellsContainer::updateCellsParticleReferences() {
-#if defined(SUBDOMAIN) || defined(PARTICLES)
-    std::cout << "falsch" << std::endl;
-#pragma omp parallel
-    {
-        occupied_cells_references.clear();
-#pragma omp for schedule(dynamic) //dynamic scheduling for deleting the cells
-        for (Cell& cell : cells) {
-            cell.clearParticleReferences();
-        }
-        // #pragma omp for schedule static()
-#pragma omp for schedule(static[100])
-        for (Particle& p : particles) {
-            Cell* cell = particlePosToCell(p.getX());
-
-            occupied_cells_references.insert(cell);
-            omp_set_lock(cell->getLock());
-            cell->addParticleReference(&p);
-            omp_unset_lock(cell->getLock());
-        }
-    }
-#else
     for (Cell &cell: cells) {
         cell.clearParticleReferences();
     }
@@ -628,7 +601,6 @@ void LinkedCellsContainer::updateCellsParticleReferences() {
         occupied_cells_references.insert(cell);
         cell->addParticleReference(&p);
     }
-#endif
     /* std::unordered_set<Cell *> newOccupiedCells;
      //std::unordered_map<Particle*,Cell*> mapParticleToNewCell;
      //occupied_cells_references.clear();
@@ -725,18 +697,18 @@ void LinkedCellsContainer::parallel_step(const std::vector<std::shared_ptr<Simpl
                                          const std::vector<std::shared_ptr<PairwiseForceSource>> &pairwise_force_sources,
                                          double delta_t, double gravityConstant, int strategy) {
     if (strategy == 1) { // parallelization strategy 1: subdomains
-      /*  auto numDomains = 10;*/
+        /*  auto numDomains = 10;*/
         std::vector<Subdomain *> subdomainsStep = getSubdomainsVector();
-       // std::cout << "subdomainsStep size " << subdomainsStep.size() << std::endl;
+        // std::cout << "subdomainsStep size " << subdomainsStep.size() << std::endl;
         /*std::cout << "num omp threads: " << omp_get_num_threads() << std::endl;*/
         // update die positions
         // dann barrier
         // dann update den rest so gut es geht
 #pragma omp parallel num_threads(16)
         {
-        //    std::cout << "num omp threads: " << omp_get_num_threads() << std::endl;
-         /*   auto numThreads = omp_get_num_threads();
-            std::cout << "Number of threads" << std::endl;*/
+            //    std::cout << "num omp threads: " << omp_get_num_threads() << std::endl;
+            /*   auto numThreads = omp_get_num_threads();
+               std::cout << "Number of threads" << std::endl;*/
 #pragma omp for schedule(dynamic) // static, 1 because every thread should work on a subdomain
             for (int i = 0; i < this->getSubdomainsVector().size(); ++i) {
                 subdomainsStep.at(i)->updateParticlePositions();
@@ -751,16 +723,16 @@ void LinkedCellsContainer::parallel_step(const std::vector<std::shared_ptr<Simpl
                 PeriodicBoundaryType::applyBoundaryConditions(*this);
             }
 
-        //    std::cout << "omp num threads" << omp_get_num_threads() << std::endl;
+            //    std::cout << "omp num threads" << omp_get_num_threads() << std::endl;
             /// force calculations
-#pragma omp critical
-            std::cout << "before subdomain steps, thread id " << omp_get_thread_num() << std::endl;
+/*#pragma omp critical
+            std::cout << "before subdomain steps, thread id " << omp_get_thread_num() << std::endl;*/
 #pragma omp for schedule(dynamic)
             for (int i = 0; i < this->getSubdomainsVector().size(); ++i) {
                 subdomainsStep.at(i)->updateSubdomain(pairwise_force_sources);
             }
-#pragma omp critical
-            std::cout << "after subdomain steps, thread id" << omp_get_thread_num() << std::endl;
+/*#pragma omp critical
+            std::cout << "after subdomain steps, thread id" << omp_get_thread_num() << std::endl;*/
 #pragma omp single
             { /// maybe need to include this somehow in the subdomainStep
                 deleteHaloParticles();
@@ -808,14 +780,7 @@ void LinkedCellsContainer::parallel_step(const std::vector<std::shared_ptr<Simpl
         // std::cout << "after simple force calculation" << std::endl;
 
         /// apply pairwise forces
-
-/*#pragma omp single
-            {*/
         applyPairwiseForcesOptimized(pairwise_force_sources);
-//        std::cout << "after pairwise force calculation" << std::endl;
-        // in deleteHalo or updateParticleReferences a double free was cause by two threads simultanously trying to
-        // free the same particle pointer
-        //     }
 
         //update the velocity
 #pragma omp parallel for schedule(dynamic)
@@ -824,20 +789,111 @@ void LinkedCellsContainer::parallel_step(const std::vector<std::shared_ptr<Simpl
             p.setV(new_v);
         }
         //}
-    }
-
-   /* else if (strategy == 3) {
-#pragma omp parallel
-        {
-            // parallelisation over particles without particle locks
-
-
+    } else if (strategy == 3) {
+/*#pragma omp parallel for schedule(dynamic)
+        for (int i = 0; i < getSubdomainsVector().size(); ++i) {
+            subdomainsVector.at(i)->updateParticlePositions();
+        }*/
+/*#pragma omp parallel for schedule(dynamic)
+        for (int i = 0; i < getSubdomainsVector().size(); ++i) {
+            for (auto &cell: getSubdomainsVector().at(i)->subdomainCells) {
+                for (auto *particle: cell.second->getParticleReferences()) {
+                    const std::array<double, 3> new_x =
+                            particle->getX() + delta_t * particle->getV() +
+                            (delta_t * delta_t / (2 * particle->getM())) * particle->getF();
+                    particle->setX(new_x);
+                    // reset forces
+                    particle->setOldF(particle->getF());
+                    particle->setF({0, 0, 0});
+                }
+            }
         }
-    }
-    else if (strategy==4){ // cells parallelization
-#pragma omp parallel
-       // {/*
-*//*#pragma omp for schedule(dynamic)
+
+        //  std::cout << "num threads before force calc" << omp_get_num_threads() << std::endl;
+        prepareForceCalculation();
+        ReflectiveBoundaryType::applyBoundaryConditions(*this);
+        OutflowBoundaryType::applyBoundaryConditions(*this);
+        PeriodicBoundaryType::applyBoundaryConditions(*this);
+
+*//*#pragma omp parallel for schedule(dynamic)
+        for (int i = 0; i < subdomainsVector.size(); ++i) {
+            subdomainsVector.at(i)->updateSubdomain(pairwise_force_sources);
+        }*//*
+#pragma omp parallel for schedule(dynamic)
+        for (int i = 0; i < subdomainsVector.size(); ++i) {
+            for (auto &cell: subdomainsVector.at(i)->subdomainCells) {
+                for (auto *particle: cell.second->getParticleReferences()) { //directly apply gravitational
+                    //force here for performance
+                    auto currentF = particle->getF();
+                    currentF[1] += particle->getM() * (-gravityConstant);
+                    particle->setF(currentF);
+                }
+            }
+            // apply pairwise forces
+            //TODO: maybe domain occupied_cell_references
+            for (auto &cell: subdomainsVector.at(i)->subdomainCells) {
+                *//**
+                only lock the cells which are at domain borders, because these are the only cells
+                where race conflicts can occur(because every domain has at most one thread, so only one thread will
+                work on the inner subdomain cells)
+                whether the cell is at the subdomain border can be deduced from cell.first
+                //
+                 *//*
+                if (cell.first) {
+                    omp_set_lock(cell.second->getLock());
+                }
+                for (auto it1 = cell.second->getParticleReferences().begin();
+                     it1 != cell.second->getParticleReferences().end(); ++it1) {
+                    Particle *p = *it1;
+                    // calculate the forces between the particle and the particles in the same cell
+                    // uses direct sum with newtons third law
+                    for (auto it2 = (it1 + 1); it2 != cell.second->getParticleReferences().end(); ++it2) {
+                        Particle *q = *it2;
+                        std::array<double, 3> total_force{0, 0, 0};
+                        for (auto &force: pairwise_force_sources) {  //maybe inline function for the force ?
+                            total_force = total_force + force->calculateForce(*p, *q);
+                        }
+                        p->setF(p->getF() + total_force);
+                        q->setF(q->getF() - total_force);
+                    }
+                }
+                if (cell.first) {
+                    omp_unset_lock(cell.second->getLock());
+                }
+                // calculate the forces between the particles in the current cell
+                // and particles in the neighbouring cells
+                //  std::cout << "before neighbour force calc" << std::endl;
+                for (Cell *neighbour: cell.second->getNeighboursToComputeForcesWith()) {
+                    //if (neighbour.first) {
+                    /// think a global lock order is established because of the deterministic force calculation
+                    omp_set_lock(cell.second->getLock());
+                    omp_set_lock(neighbour->getLock());
+                    //}
+                    for (Particle *p: cell.second->getParticleReferences()) {
+                        for (Particle *neighbour_particle: neighbour->getParticleReferences()) {
+                            if (ArrayUtils::L2Norm(p->getX() - neighbour_particle->getX()) > cutoff_radius) continue;
+                            for (const auto &force_source: pairwise_force_sources) {
+                                std::array<double, 3> force = force_source->calculateForce(*p, *neighbour_particle);
+                                p->setF(p->getF() + force);
+                                neighbour_particle->setF(neighbour_particle->getF() - force);
+                            }
+                        }
+                    }
+                    // free the lock for the neighbour
+                    // if (cell.first) {
+                    omp_unset_lock(cell.second->getLock());
+                    omp_unset_lock(neighbour->getLock());
+                    //}
+                }
+            }
+        }
+        deleteHaloParticles();
+        updateCellsParticleReferences();*/
+
+        /*else if (strategy==4){ // cells parallelization
+    #pragma omp parallel
+           // {/*
+    *//*#pragma omp for schedule(dynamic)
             for (auto& cell : cells) {
                 for (auto* p : cell.getParticleReferences()) {
                     const std::array<double, 3> new_x =
@@ -905,9 +961,9 @@ void LinkedCellsContainer::parallel_step(const std::vector<std::shared_ptr<Simpl
     else {
 
     }*/
-}
+    }
 
-void LinkedCellsContainer::setPairwise(std::vector<std::shared_ptr<PairwiseForceSource>> pairwiseForceSources) {
+    // void LinkedCellsContainer::setPairwise(std::vector<std::shared_ptr<PairwiseForceSource>> pairwiseForceSources) {
     /*this->pairwise_force_sources = pairwiseForceSources;*/
 }
 

@@ -116,7 +116,7 @@ SimulationOverview Simulation::runSimulation() {
         }
         else if (strategy == 3) {
           //  verletFunctor->parallel_step(linkedCellsContainer, params.simple_forces, params.pairwise_forces, params.delta_t, gravityConstant, 3);
-            particle_container->parallel_step(params.simple_forces, params.pairwise_forces, params.delta_t, gravityConstant, 2);
+            particle_container->parallel_step(params.simple_forces, params.pairwise_forces, params.delta_t, gravityConstant, 3);
         }
         else {
             integration_functor->step(particle_container, params.simple_forces, params.pairwise_forces, params.delta_t);
