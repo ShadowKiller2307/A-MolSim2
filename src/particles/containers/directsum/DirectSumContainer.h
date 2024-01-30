@@ -20,6 +20,8 @@ class DirectSumContainer : public ParticleContainer {
     std::array<double,3> empty_array;
 
    public:
+
+    void setPairwise(std::vector<std::shared_ptr<PairwiseForceSource>> pairwiseForceSources) override;
     void parallel_step(
             const std::vector<std::shared_ptr<SimpleForceSource>> &simple_force_sources,
             const std::vector<std::shared_ptr<PairwiseForceSource>> &pairwise_force_sources, double delta_t,

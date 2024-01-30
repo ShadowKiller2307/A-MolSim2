@@ -28,6 +28,8 @@ class ParticleContainer {
      */
     virtual ~ParticleContainer() = default;
 
+    virtual void setPairwise(std::vector<std::shared_ptr<PairwiseForceSource>> pairwiseForceSources) = 0;
+
     /**
      * @brief Adds a particle to the container
      *

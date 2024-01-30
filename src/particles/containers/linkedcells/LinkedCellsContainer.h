@@ -17,6 +17,10 @@
 class LinkedCellsContainer : public ParticleContainer {
    // using Subdomain = std::unordered_set<Cell*>;
    public:
+
+
+    void setPairwise(std::vector<std::shared_ptr<PairwiseForceSource>> pairwiseForceSources) override;
+
     /**
      * @brief Boundary type enum for labeling the sides of the domain
      */
@@ -46,7 +50,7 @@ class LinkedCellsContainer : public ParticleContainer {
      * cells that are used for boundary condition handling. Therefore the valid cell coordinates range from -1 to domain_num_cells[i] in
      * each dimension (i = 0 -> x; i = 1 -> y; i = 2 -> z).
      */
-    LinkedCellsContainer(const std::array<double, 3>& domain_size, double cutoff_radius,
+    LinkedCellsContainer(const std::array<double, 3>& domain_size, double cutoff_radius, const std::vector<std::shared_ptr<PairwiseForceSource>> &pairwise_force_sources,
                          const std::array<BoundaryCondition, 6>& boundary_types = {BoundaryCondition::OUTFLOW, BoundaryCondition::OUTFLOW,
                                                                                    BoundaryCondition::OUTFLOW, BoundaryCondition::OUTFLOW,BoundaryCondition::OUTFLOW, BoundaryCondition::OUTFLOW},
                          int n = 0);
@@ -446,4 +450,6 @@ class LinkedCellsContainer : public ParticleContainer {
     double delta_t;
 
     double gravityConstant;
+
+    const std::vector<std::shared_ptr<PairwiseForceSource>> &pairwise_force_sources; //= std::make_shared<>();
 };

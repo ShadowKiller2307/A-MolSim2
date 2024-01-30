@@ -78,6 +78,10 @@ void DirectSumContainer::parallel_step(const std::vector<std::shared_ptr<SimpleF
 
 }
 
+void DirectSumContainer::setPairwise(std::vector<std::shared_ptr<PairwiseForceSource>> pairwiseForceSources) {
+
+}
+
 /*std::map<unsigned int, Subdomain*> DirectSumContainer::getSubdomains() {
     return std::map<unsigned int, Subdomain*>();
 }*/

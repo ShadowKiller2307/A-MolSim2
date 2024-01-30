@@ -38,7 +38,7 @@ Simulation::Simulation(const std::vector<Particle> &initial_particles, const Sim
             }
         }*/
         particle_container =
-                std::make_unique<LinkedCellsContainer>(lc_type.domain_size, lc_type.cutoff_radius,
+                std::make_unique<LinkedCellsContainer>(lc_type.domain_size, lc_type.cutoff_radius, params.pairwise_forces,
                                                        lc_type.boundary_conditions);
 
     } else if (std::holds_alternative<SimulationParams::DirectSumType>(params.container_type)) {
@@ -96,6 +96,8 @@ SimulationOverview Simulation::runSimulation() {
     if (!params.simple_forces.empty()) {
         gravityConstant = params.simple_forces.at(0)->getGravityConstant();
     }
+
+  //  particle_container->
     ///////////////////////////////////////// here almost all the computing work is done /////////////////////////////////////////////////////////////////////////////
 
 #pragma omp parallel
@@ -108,7 +110,7 @@ SimulationOverview Simulation::runSimulation() {
             //verletFunctor->parallel_step(linkedCellsContainer, params.simple_forces, params.pairwise_forces, params.delta_t, gravityConstant, 1);
             particle_container->parallel_step(params.simple_forces, params.pairwise_forces, params.delta_t, gravityConstant, 1);
         }
-        else if (strategy == 2){
+        else if (strategy == 2) {
            // verletFunctor->parallel_step(linkedCellsContainer, params.simple_forces, params.pairwise_forces, params.delta_t, gravityConstant, 2);
             particle_container->parallel_step(params.simple_forces, params.pairwise_forces, params.delta_t, gravityConstant, 2);
         }
