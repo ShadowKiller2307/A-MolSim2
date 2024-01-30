@@ -594,6 +594,7 @@ void LinkedCellsContainer::initCellNeighbourReferences() {
 
 void LinkedCellsContainer::updateCellsParticleReferences() {
 #if defined(SUBDOMAIN) || defined(PARTICLES)
+    std::cout << "falsch" << std::endl;
 #pragma omp parallel
     {
         occupied_cells_references.clear();
@@ -750,17 +751,21 @@ void LinkedCellsContainer::parallel_step(const std::vector<std::shared_ptr<Simpl
                 PeriodicBoundaryType::applyBoundaryConditions(*this);
             }
 
+        //    std::cout << "omp num threads" << omp_get_num_threads() << std::endl;
             /// force calculations
+#pragma omp critical
+            std::cout << "before subdomain steps, thread id " << omp_get_thread_num() << std::endl;
 #pragma omp for schedule(dynamic)
             for (int i = 0; i < this->getSubdomainsVector().size(); ++i) {
                 subdomainsStep.at(i)->updateSubdomain(pairwise_force_sources);
             }
+#pragma omp critical
+            std::cout << "after subdomain steps, thread id" << omp_get_thread_num() << std::endl;
 #pragma omp single
             { /// maybe need to include this somehow in the subdomainStep
                 deleteHaloParticles();
                 updateCellsParticleReferences();
             }
-
         }
 
     } else if (strategy == 2) { // parallelization strategy 2 : particles parallelization

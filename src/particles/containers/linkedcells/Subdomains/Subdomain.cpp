@@ -63,6 +63,7 @@ void Subdomain::updateSubdomain(const std::vector<std::shared_ptr<PairwiseForceS
         }
         // calculate the forces between the particles in the current cell
         // and particles in the neighbouring cells
+      //  std::cout << "before neighbour force calc" << std::endl;
         for (Cell *neighbour: cell.second->getNeighboursToComputeForcesWith()) {
             //if (neighbour.first) {
             /// think a global lock order is established because of the deterministic force calculation
@@ -85,6 +86,7 @@ void Subdomain::updateSubdomain(const std::vector<std::shared_ptr<PairwiseForceS
             omp_unset_lock(neighbour->getLock());
             //}
         }
+     //   std::cout << "after neighbour force calc" << std::endl;
 
         /*  // free the lock for the current cell
           if (cell.first) {
@@ -93,6 +95,7 @@ void Subdomain::updateSubdomain(const std::vector<std::shared_ptr<PairwiseForceS
 
     }
 //update velocities
+   // std::cout << "before velocities" << std::endl;
     for (
         auto &cell
             : subdomainCells) {
@@ -107,6 +110,7 @@ void Subdomain::updateSubdomain(const std::vector<std::shared_ptr<PairwiseForceS
                     setV(new_v);
         }
     }
+   // std::cout << "after velocities" << std::endl;
 }
 
 void Subdomain::updateParticlePositions() {
