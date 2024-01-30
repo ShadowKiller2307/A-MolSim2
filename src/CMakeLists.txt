@@ -17,17 +17,21 @@ target_link_libraries(project_lib PUBLIC XercesC::XercesC spdlog::spdlog Boost::
 
 add_executable(MolSim MolSim.cpp)
 target_link_libraries(MolSim PUBLIC project_lib)
-
+#[[
 option(SUB "Subdomain Strategy" OFF) # option for the Subdomain parallelization strategy
-option(PAR "Particles Strategy" OFF) # option for the Particles parallelization strategy
+option(PAR "Particles Strategy" OFF) # option for the Particles parallelization strategy]]
 
 # activate all compiler warnings.
 target_compile_options(
         MolSim PRIVATE
         $<$<CXX_COMPILER_ID:GNU>:-Wall>
         $<$<CXX_COMPILER_ID:Intel>:-w3 -wd383,981,1418,1572,2259>)
+ #       -fsanitize=address)
+#target_link_options(MolSim PRIVATE -fsanitize=address)
         #[[$<$<BOOL:${SUB}>:-DSUBDOMAIN=ON -DPARTICLES=OFF>
         $<$<BOOL:${PAR}>:-DPARTICLES=ON -DSUBDOMAIN=OFF>)
+
+
 unset(SUB CACHE)
 unset(PAR CACHE)
 unset(SUBDOMAIN CACHE)

@@ -11,7 +11,7 @@ Subdomain::Subdomain(double delta_t, double gravityConstant, double cutOffRadius
 
 //void Subdomain::initializeSubdomains() {}
 void Subdomain::addCell(bool isAtSubdomainBorder, Cell *cellToAdd) {
-    subdomainCells.emplace(isAtSubdomainBorder,cellToAdd);
+    subdomainCells.emplace(isAtSubdomainBorder, cellToAdd);
 }
 
 void Subdomain::calculateForcesBetweenCells(Cell *one, Cell *two) {
@@ -32,7 +32,7 @@ void Subdomain::updateSubdomain(const std::vector<std::shared_ptr<PairwiseForceS
     }
     // apply pairwise forces
     //TODO: maybe domain occupied_cell_references
-    for (auto& cell: subdomainCells) {
+    for (auto &cell: subdomainCells) {
         /**
         only lock the cells which are at domain borders, because these are the only cells
         where race conflicts can occur(because every domain has at most one thread, so only one thread will
@@ -43,7 +43,8 @@ void Subdomain::updateSubdomain(const std::vector<std::shared_ptr<PairwiseForceS
         if (cell.first) {
             omp_set_lock(cell.second->getLock());
         }
-        for (auto it1 = cell.second->getParticleReferences().begin(); it1 != cell.second->getParticleReferences().end(); ++it1) {
+        for (auto it1 = cell.second->getParticleReferences().begin();
+             it1 != cell.second->getParticleReferences().end(); ++it1) {
             Particle *p = *it1;
             // calculate the forces between the particle and the particles in the same cell
             // uses direct sum with newtons third law
@@ -56,12 +57,19 @@ void Subdomain::updateSubdomain(const std::vector<std::shared_ptr<PairwiseForceS
                 p->setF(p->getF() + total_force);
                 q->setF(q->getF() - total_force);
             }
-            // calculate the forces between the particles in the current cell
-            // and particles in the neighbouring cells
-            for (Cell *neighbour: cell.second->getNeighboursToComputeForcesWith()) {
-                if (cell.first) {
-                    omp_set_lock(neighbour->getLock());
-                }
+        }
+        if (cell.first) {
+            omp_set_lock(cell.second->getLock());
+        }
+        // calculate the forces between the particles in the current cell
+        // and particles in the neighbouring cells
+        for (Cell *neighbour: cell.second->getNeighboursToComputeForcesWith()) {
+            //if (neighbour.first) {
+            /// think a global lock order is established because of the deterministic force calculation
+            omp_set_lock(cell.second->getLock());
+            omp_set_lock(neighbour->getLock());
+            //}
+            for (Particle *p: cell.second->getParticleReferences()) {
                 for (Particle *neighbour_particle: neighbour->getParticleReferences()) {
                     if (ArrayUtils::L2Norm(p->getX() - neighbour_particle->getX()) > cutoffRadius) continue;
                     for (const auto &force_source: force_sources) {
@@ -70,24 +78,33 @@ void Subdomain::updateSubdomain(const std::vector<std::shared_ptr<PairwiseForceS
                         neighbour_particle->setF(neighbour_particle->getF() - force);
                     }
                 }
-                // free the lock for the neighbour
-                if (cell.first) {
-                    omp_unset_lock(neighbour->getLock());
-                }
             }
-        }
-        // free the lock for the current cell
-        if (cell.first) {
+            // free the lock for the neighbour
+            // if (cell.first) {
             omp_unset_lock(cell.second->getLock());
+            omp_unset_lock(neighbour->getLock());
+            //}
         }
 
+        /*  // free the lock for the current cell
+          if (cell.first) {
+              omp_unset_lock(cell.second->getLock());
+          }*/
+
     }
-    //update velocities
-    for (auto &cell: subdomainCells) {
-        for (auto *particle: cell.second->getParticleReferences()) {
+//update velocities
+    for (
+        auto &cell
+            : subdomainCells) {
+        for (
+            auto *particle
+                : cell.second->
+                getParticleReferences()
+                ) {
             const std::array<double, 3> new_v =
                     particle->getV() + (delta_t / (2 * particle->getM())) * (particle->getF() + particle->getOldF());
-            particle->setV(new_v);
+            particle->
+                    setV(new_v);
         }
     }
 }

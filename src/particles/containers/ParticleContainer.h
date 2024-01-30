@@ -17,6 +17,12 @@
  */
 class ParticleContainer {
    public:
+    virtual void parallel_step(
+            const std::vector<std::shared_ptr<SimpleForceSource>> &simple_force_sources,
+            const std::vector<std::shared_ptr<PairwiseForceSource>> &pairwise_force_sources, double delta_t,
+            double gravityConstant, int strategy) = 0;
+
+
     /**
      * @brief Virtual destructor for correct deconstruction of inheriting classes
      */

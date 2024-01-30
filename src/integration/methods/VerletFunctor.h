@@ -28,7 +28,7 @@ public:
               double delta_t) const override;
 
     void parallel_step(
-            std::unique_ptr<LinkedCellsContainer> &linkedCellsContainer, // maybe change this to LinkedCellsContainer
+            std::unique_ptr<ParticleContainer> &linkedCellsContainer, // maybe change this to LinkedCellsContainer
             const std::vector<std::shared_ptr<SimpleForceSource>> &simple_force_sources,
             const std::vector<std::shared_ptr<PairwiseForceSource>> &pairwise_force_sources, double delta_t,
             double gravityConstant, int strategy);

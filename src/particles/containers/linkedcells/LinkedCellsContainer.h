@@ -48,9 +48,9 @@ class LinkedCellsContainer : public ParticleContainer {
      */
     LinkedCellsContainer(const std::array<double, 3>& domain_size, double cutoff_radius,
                          const std::array<BoundaryCondition, 6>& boundary_types = {BoundaryCondition::OUTFLOW, BoundaryCondition::OUTFLOW,
-                                                                                   BoundaryCondition::OUTFLOW, BoundaryCondition::OUTFLOW,
-                                                                                   BoundaryCondition::OUTFLOW, BoundaryCondition::OUTFLOW},
+                                                                                   BoundaryCondition::OUTFLOW, BoundaryCondition::OUTFLOW,BoundaryCondition::OUTFLOW, BoundaryCondition::OUTFLOW},
                          int n = 0);
+                         //const std::shared_ptr<PairwiseForceSource> &pairwise_force_sources = std::make_shared<>());
 
     /**
      * @brief Adds a particle to the container
@@ -63,6 +63,10 @@ class LinkedCellsContainer : public ParticleContainer {
 
     int findCellForParticle(const std::array<double, 3>& pos);
 
+    void parallel_step(
+            const std::vector<std::shared_ptr<SimpleForceSource>> &simple_force_sources,
+            const std::vector<std::shared_ptr<PairwiseForceSource>> &pairwise_force_sources, double delta_t,
+            double gravityConstant, int strategy) override;
 
     /**
      * @brief initialize the subdomains if parallelization strategy 1 is chosen

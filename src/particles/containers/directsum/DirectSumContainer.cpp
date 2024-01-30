@@ -72,6 +72,12 @@ std::map<std::array<unsigned int, 3>, Subdomain*> DirectSumContainer::getSubdoma
     return {};
 }
 
+void DirectSumContainer::parallel_step(const std::vector<std::shared_ptr<SimpleForceSource>> &simple_force_sources,
+                                       const std::vector<std::shared_ptr<PairwiseForceSource>> &pairwise_force_sources,
+                                       double delta_t, double gravityConstant, int strategy) {
+
+}
+
 /*std::map<unsigned int, Subdomain*> DirectSumContainer::getSubdomains() {
     return std::map<unsigned int, Subdomain*>();
 }*/

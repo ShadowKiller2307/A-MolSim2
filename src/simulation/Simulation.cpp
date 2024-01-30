@@ -26,17 +26,17 @@ Simulation::Simulation(const std::vector<Particle> &initial_particles, const Sim
         : params(params), integration_functor(get_integration_functor(integration_method)) {
     // std::cout << "begin simulation constructor" << std::endl;
     // Create particle container
-    strategy = 2;
+    //strategy = 2;
     if (std::holds_alternative<SimulationParams::LinkedCellsType>(params.container_type)) {
         auto lc_type = std::get<SimulationParams::LinkedCellsType>(params.container_type);
-        if (strategy == 1 || strategy == 2) {
+       /* if (strategy == 1 || strategy == 2) {
             linkedCellsContainer = std::make_unique<LinkedCellsContainer>(lc_type.domain_size, lc_type.cutoff_radius,lc_type.boundary_conditions);
             linkedCellsContainer->reserve(initial_particles.size());
             for (auto &particle: initial_particles) {
                 linkedCellsContainer->addParticle(particle);
                 initial_pos_of_particles.push_back(particle.getX());
             }
-        }
+        }*/
         particle_container =
                 std::make_unique<LinkedCellsContainer>(lc_type.domain_size, lc_type.cutoff_radius,
                                                        lc_type.boundary_conditions);
@@ -62,18 +62,18 @@ SimulationOverview Simulation::runSimulation() {
     size_t iteration = 0;
     double simulated_time = 0;
 
-    if (strategy == 1 || strategy == 2) {
+    /*if (strategy == 1 || strategy == 2) {
         linkedCellsContainer->prepareForceCalculation();
         linkedCellsContainer->applySimpleForces(params.simple_forces);
         linkedCellsContainer->applyPairwiseForces(params.pairwise_forces);
     }
 
-    // Calculate initial forces  //TODO: has also to be done for the parallelization strategies
-    else {
+    // Calculate initial forces
+    else {*/
         particle_container->prepareForceCalculation();
         particle_container->applySimpleForces(params.simple_forces);
         particle_container->applyPairwiseForces(params.pairwise_forces);
-    }
+  //  }
     // params.simple_forces.at(0).
 
     Logger::logger->info("Simulation started...");
@@ -105,13 +105,16 @@ SimulationOverview Simulation::runSimulation() {
 
     while (simulated_time < params.end_time) {
         if (strategy == 1) {
-            verletFunctor->parallel_step(linkedCellsContainer, params.simple_forces, params.pairwise_forces, params.delta_t, gravityConstant, 1);
+            //verletFunctor->parallel_step(linkedCellsContainer, params.simple_forces, params.pairwise_forces, params.delta_t, gravityConstant, 1);
+            particle_container->parallel_step(params.simple_forces, params.pairwise_forces, params.delta_t, gravityConstant, 1);
         }
         else if (strategy == 2){
-            verletFunctor->parallel_step(linkedCellsContainer, params.simple_forces, params.pairwise_forces, params.delta_t, gravityConstant, 2);
+           // verletFunctor->parallel_step(linkedCellsContainer, params.simple_forces, params.pairwise_forces, params.delta_t, gravityConstant, 2);
+            particle_container->parallel_step(params.simple_forces, params.pairwise_forces, params.delta_t, gravityConstant, 2);
         }
         else if (strategy == 3) {
-            verletFunctor->parallel_step(linkedCellsContainer, params.simple_forces, params.pairwise_forces, params.delta_t, gravityConstant, 3);
+          //  verletFunctor->parallel_step(linkedCellsContainer, params.simple_forces, params.pairwise_forces, params.delta_t, gravityConstant, 3);
+            particle_container->parallel_step(params.simple_forces, params.pairwise_forces, params.delta_t, gravityConstant, 2);
         }
         else {
             integration_functor->step(particle_container, params.simple_forces, params.pairwise_forces, params.delta_t);
