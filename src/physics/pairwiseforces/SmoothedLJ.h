@@ -3,7 +3,7 @@
 #include "physics/pairwiseforces/PairwiseForceSource.h"
 
 class SmoothedLJ : public PairwiseForceSource{
-
+public:
     SmoothedLJ(double rl, double cutOffRadius);
 
     /**
