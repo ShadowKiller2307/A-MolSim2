@@ -56,7 +56,7 @@ class LinkedCellsContainer : public ParticleContainer {
     LinkedCellsContainer(const std::array<double, 3>& domain_size, double cutoff_radius, const std::vector<std::shared_ptr<PairwiseForceSource>> &pairwise_force_sources,
                          const std::array<BoundaryCondition, 6>& boundary_types = {BoundaryCondition::OUTFLOW, BoundaryCondition::OUTFLOW,
                                                                                    BoundaryCondition::OUTFLOW, BoundaryCondition::OUTFLOW,BoundaryCondition::OUTFLOW, BoundaryCondition::OUTFLOW},
-                         int n = 0);
+                         int n = 0, int numThreads = 8);
                          //const std::shared_ptr<PairwiseForceSource> &pairwise_force_sources = std::make_shared<>());
 
     /**
@@ -453,6 +453,8 @@ class LinkedCellsContainer : public ParticleContainer {
     double delta_t;
 
     double gravityConstant;
+
+    int numThreads;
 
     const std::vector<std::shared_ptr<PairwiseForceSource>> &pairwise_force_sources; //= std::make_shared<>();
 };

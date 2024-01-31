@@ -16,9 +16,9 @@
 */
 LinkedCellsContainer::LinkedCellsContainer(const std::array<double, 3> &_domain_size, double _cutoff_radius,
                                            const std::vector<std::shared_ptr<PairwiseForceSource>> &pairwiseForceSources,
-                                           const std::array<BoundaryCondition, 6> &_boundary_types, int _n)
+                                           const std::array<BoundaryCondition, 6> &_boundary_types, int _n, int numThreads)
         : domain_size(_domain_size), cutoff_radius(_cutoff_radius), pairwise_force_sources(pairwiseForceSources),
-          boundary_types(_boundary_types) {
+          boundary_types(_boundary_types), numThreads(numThreads) {
 
     // calculate the number of cells in each dimension
     domain_num_cells = {std::max(static_cast<int>(std::floor(_domain_size[0] / cutoff_radius)), 1),
@@ -37,7 +37,7 @@ LinkedCellsContainer::LinkedCellsContainer(const std::array<double, 3> &_domain_
      // add the neighbour references to the cells
     initCellNeighbourReferences();
 
-    initSubdomains(16); // initialize the subdomains for parallelization strategy 2
+    initSubdomains(numThreads*2); // initialize the subdomains for parallelization strategy 2
 
     // reserve the memory for the particles to prevent reallocation during insertion
     particles.reserve(_n);
@@ -651,98 +651,132 @@ void LinkedCellsContainer::parallel_step(const std::vector<std::shared_ptr<Simpl
                                          const std::vector<std::shared_ptr<PairwiseForceSource>> &pairwise_force_sources,
                                          double delta_t, double gravityConstant, int strategy) {
     if (strategy == 1) { // parallelization strategy 1: subdomains
-        /*  auto numDomains = 10;*/
-        std::vector<Subdomain *> subdomainsStep = getSubdomainsVector();
-        // std::cout << "subdomainsStep size " << subdomainsStep.size() << std::endl;
-        /*std::cout << "num omp threads: " << omp_get_num_threads() << std::endl;*/
-        // update die positions
-        // dann barrier
-        // dann update den rest so gut es geht
-#pragma omp parallel num_threads(8)
-        {
-            //    std::cout << "num omp threads: " << omp_get_num_threads() << std::endl;
-            /*   auto numThreads = omp_get_num_threads();
-               std::cout << "Number of threads" << std::endl;*/
-#pragma omp for schedule(dynamic) // static, 1 because every thread should work on a subdomain
-            for (int i = 0; i < this->getSubdomainsVector().size(); ++i) {
-                subdomainsStep.at(i)->updateParticlePositions();
-            }  // <-- omp puts barrier automatically here
-#pragma omp single
-            {
-                this->prepareForceCalculation();
-                // TODO: will this be a problem that it is before
-                // the simple force calculation (think not)
-                ReflectiveBoundaryType::applyBoundaryConditions(*this);
-                OutflowBoundaryType::applyBoundaryConditions(*this);
-                PeriodicBoundaryType::applyBoundaryConditions(*this);
-            }
-
-            //    std::cout << "omp num threads" << omp_get_num_threads() << std::endl;
-            /// force calculations
-/*#pragma omp critical
-            std::cout << "before subdomain steps, thread id " << omp_get_thread_num() << std::endl;*/
-#pragma omp for schedule(dynamic)
-            for (int i = 0; i < this->getSubdomainsVector().size(); ++i) {
-                subdomainsStep.at(i)->updateSubdomain(pairwise_force_sources);
-            }
-/*#pragma omp critical
-            std::cout << "after subdomain steps, thread id" << omp_get_thread_num() << std::endl;*/
-#pragma omp single
-            { /// maybe need to include this somehow in the subdomainStep
-                deleteHaloParticles();
-                updateCellsParticleReferences();
+#pragma omp parallel for schedule(dynamic)
+        for (int i = 0; i < getSubdomainsVector().size(); ++i) {
+            for (auto &cell: getSubdomainsVector().at(i)->subdomainCells) {
+                for (auto *particle: cell.second->getParticleReferences()) {
+                    const std::array<double, 3> new_x =
+                            particle->getX() + delta_t * particle->getV() +
+                            (delta_t * delta_t / (2 * particle->getM())) * particle->getF();
+                    particle->setX(new_x);
+                    // reset forces
+                    particle->setOldF(particle->getF());
+                    particle->setF({0, 0, 0});
+                }
             }
         }
 
-    } else if (strategy == 2) { // parallelization strategy 2 : particles parallelization
-        /**
-         * @brief: for parallelizaton strategy 2, each cell will be processed sequentielly,
-         * within the cells threads are spawned to update the particles
-         */
-        //std::cout << "reach parallel step" << std::endl;
-/*#pragma omp parallel
-        {*/
-        /// update the positions
-        //   std::cout << "Strategy particles" << std::endl;
+        prepareForceCalculation();
+
+        ReflectiveBoundaryType::applyBoundaryConditions(*this);
+        OutflowBoundaryType::applyBoundaryConditions(*this);
+        PeriodicBoundaryType::applyBoundaryConditions(*this);
+
+#pragma omp parallel for schedule(dynamic) //num_threads(8)
+        for (auto* subdomain : subdomainsVector) {
+           // std::cout << "num threads parallel_step: " << omp_get_num_threads() << std::endl;
+            for (auto &cell: subdomain->subdomainCells) {
+                if (cell.first) {
+                    omp_set_lock(cell.second->getLock());
+                }
+                for (auto *particle: cell.second->getParticleReferences()) { //directly apply gravitational
+                    //force here for performance
+                    auto currentF = particle->getF();
+                    currentF[1] += particle->getM() * (-gravityConstant);
+                    particle->setF(currentF);
+                }
+                if (cell.first) {
+                    omp_unset_lock(cell.second->getLock());
+                }
+            }
+            // apply pairwise forces
+            //TODO: maybe domain occupied_cell_references
+            for (auto &cell: subdomain->subdomainCells) {
+                /*
+                only lock the cells which are at domain borders, because these are the only cells
+                where race conflicts can occur(because every domain has at most one thread, so only one thread will
+                work on the inner subdomain cells)
+                whether the cell is at the subdomain border can be deduced from cell.first*/
+                //
+
+                if (cell.first) {
+                    omp_set_lock(cell.second->getLock());
+                }
+                for (auto it1 = cell.second->getParticleReferences().begin();
+                     it1 != cell.second->getParticleReferences().end(); ++it1) {
+                    Particle *p = *it1;
+                    // calculate the forces between the particle and the particles in the same cell
+                    // uses direct sum with newtons third law
+                    for (auto it2 = (it1 + 1); it2 != cell.second->getParticleReferences().end(); ++it2) {
+                        Particle *q = *it2;
+                        std::array<double, 3> total_force{0, 0, 0};
+                        for (auto &force: pairwise_force_sources) {  //maybe inline function for the force ?
+                            total_force = total_force + force->calculateForce(*p, *q);
+                        }
+                        p->setF(p->getF() + total_force);
+                        q->setF(q->getF() - total_force);
+                    }
+                }
+                if (cell.first) {
+                    omp_unset_lock(cell.second->getLock());
+                }
+                // calculate the forces between the particles in the current cell
+                // and particles in the neighbouring cells
+                //  std::cout << "before neighbour force calc" << std::endl;
+                for (Cell *neighbour: cell.second->getNeighboursToComputeForcesWith()) {
+                    //if (neighbour.first) {
+                    /// think a global lock order is established because of the deterministic force calculation
+                    if (cell.second->getCellIndex() < neighbour->getCellIndex()) {
+                        omp_set_lock(cell.second->getLock());
+                        omp_set_lock(neighbour->getLock());
+                    }
+                    else if (cell.second->getCellIndex() ==  neighbour->getCellIndex()) {
+                        throw std::out_of_range("Different subdomains contain the same cell!");
+                    }
+                    else {
+                        omp_set_lock(neighbour->getLock());
+                        omp_set_lock(cell.second->getLock());
+                    }
+                    //}
+                    for (Particle *p: cell.second->getParticleReferences()) {
+                        for (Particle *neighbour_particle: neighbour->getParticleReferences()) {
+                            if (ArrayUtils::L2Norm(p->getX() - neighbour_particle->getX()) > cutoff_radius) continue;
+                            for (const auto &force_source: pairwise_force_sources) {
+                                std::array<double, 3> force = force_source->calculateForce(*p, *neighbour_particle);
+                                p->setF(p->getF() + force);
+                                neighbour_particle->setF(neighbour_particle->getF() - force);
+                            }
+                        }
+                    }
+                    if (cell.second->getCellIndex() < neighbour->getCellIndex()) {
+                        omp_unset_lock(cell.second->getLock());
+                        omp_unset_lock(neighbour->getLock());
+                    }
+                    else {
+                        omp_unset_lock(neighbour->getLock());
+                        omp_unset_lock(cell.second->getLock());
+                    }
+                    // free the lock for the neighbour
+                    // if (cell.first) {
+                 /*   omp_unset_lock(cell.second->getLock());
+                    omp_unset_lock(neighbour->getLock());*/
+                }
+            }
+        }
+
 #pragma omp parallel for schedule(dynamic)
-        for (auto &p: *this) {
-            // std::cout << omp_get_num_threads() << std::endl; // at the moment only one thread
-            // update position
-            const std::array<double, 3> new_x =
-                    p.getX() + delta_t * p.getV() + (delta_t * delta_t / (2 * p.getM())) * p.getF();
-            p.setX(new_x);
-
-            // reset forces
-            p.setOldF(p.getF());
-            p.setF({0, 0, 0});
-        }
-        //     std::cout << "after position calculation" << std::endl;
-
-#pragma omp single
-        {
-            this->prepareForceCalculation();
+        for (auto* subdomain : subdomainsVector) {
+            for (auto &cell: subdomain->subdomainCells) {
+                for (auto *particle: cell.second->getParticleReferences()) {
+                    const std::array<double, 3> new_v = particle->getV() + (delta_t / (2 * particle->getM())) *
+                                                                           (particle->getF() + particle->getOldF());
+                    particle->setV(new_v);
+                }
+            }
         }
 
-        /// apply simple forces
-#pragma omp parallel for schedule(dynamic)
-        for (auto &p: *this) { //directly apply gravitational
-            //force here for performance
-            auto currentF = p.getF();
-            currentF[1] += p.getM() * (-gravityConstant);
-            p.setF(currentF);
-        }
-        // std::cout << "after simple force calculation" << std::endl;
-
-        /// apply pairwise forces
-        applyPairwiseForcesOptimized(pairwise_force_sources);
-
-        //update the velocity
-#pragma omp parallel for schedule(dynamic)
-        for (auto &p: *this) {
-            const std::array<double, 3> new_v = p.getV() + (delta_t / (2 * p.getM())) * (p.getF() + p.getOldF());
-            p.setV(new_v);
-        }
-        //}
+        deleteHaloParticles();
+        updateCellsParticleReferences();
     }
 
 

@@ -50,7 +50,8 @@ private:
  */
 const SimulationParams &params;
 
-int strategy = 3;
+int strategy = 0;
+int numThreads = 8;
 
 //    static bool is_strategy_1;
 

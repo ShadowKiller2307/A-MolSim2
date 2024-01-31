@@ -5,7 +5,7 @@
 
     <settings>
         <delta_t>0.0001</delta_t>
-        <end_time>10</end_time>
+        <end_time>250</end_time>
         <third_dimension>true</third_dimension>
         <particle_container>
             <linkedcells_container>
