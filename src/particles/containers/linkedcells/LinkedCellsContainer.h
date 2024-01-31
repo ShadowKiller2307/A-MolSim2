@@ -18,6 +18,9 @@ class LinkedCellsContainer : public ParticleContainer {
    // using Subdomain = std::unordered_set<Cell*>;
    public:
 
+    bool printCellNeighboursToComputeForcesWith();
+
+    bool checkNoDuplicateCellsInDiffSubdomains();
 
     void setPairwise(std::vector<std::shared_ptr<PairwiseForceSource>> pairwiseForceSources) override;
 

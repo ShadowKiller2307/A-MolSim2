@@ -52,13 +52,17 @@ class Cell {
      */
      omp_lock_t cellLock;
 
+     int cellIndex;
+
    public:
     /**
      * @brief Construct a new Cell object
      *
      * @param cell_type Type of the cell
      */
-    explicit Cell(CellType cell_type);
+    explicit Cell(CellType cell_type, int index);
+
+    int getCellIndex();
 
     /**
      * @brief custom constructor, needed as the lock needs

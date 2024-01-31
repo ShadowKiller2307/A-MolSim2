@@ -1,6 +1,6 @@
 #include "Cell.h"
 
-Cell::Cell(CellType cell_type) : cell_type(cell_type) {
+Cell::Cell(CellType cell_type, int index) : cell_type(cell_type), cellIndex(index){
     neighbour_references.reserve(26);
     already_influenced_by.reserve(16);
     omp_init_lock(&cellLock);
@@ -43,4 +43,8 @@ omp_lock_t* Cell::getLock() {
 void Cell::calculateForcesBetweenCells(Cell *other) {
 
 
+}
+
+int Cell::getCellIndex() {
+    return cellIndex;
 }

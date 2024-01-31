@@ -14,6 +14,8 @@
 class Subdomain{
 public:
 
+    std::set<std::pair<bool, Cell*>> subdomainCells;
+
     Subdomain(double delta_t, double gravityConstant, double cutoffRadius);
     /**
      * @brief: based on the number of threads subdomains are intialized which consist of multiple cells
@@ -45,12 +47,12 @@ private:
     double delta_t;
     double gravityConstant;
     double cutoffRadius;
-    std::set<std::pair<bool, Cell*>> subdomainCells;
+   /* std::set<std::pair<bool, Cell*>> subdomainCells;*/
   /*  std::array<double, 3> domainSize;
     std::array<unsigned, 3> cellsPerDimension;
     double cutoffRadius;
     unsigned numThreads;*/
 
- // friend LinkedCellsContainer;
+  // friend LinkedCellsContainer;
 };
 
