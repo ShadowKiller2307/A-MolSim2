@@ -31,12 +31,14 @@
         <interceptors>
             <FrameWriter output_format="vtu" fps="24" video_length_s="30" />
             <Thermostat target_temperature="0.02" application_interval="25" max_temperature_change="0.0025"/>
+            <Diffusion/>
+            <RadialDistributionFunction bin_width="0.1" sample_every_x_percent="25"/>
         </interceptors>
     </settings>
 
 
     <particle_source>
-        <sub_simulation path="equilibrated_fluid.xml" />
+        <check_point_loader path="equilibrated_fluid_checkpoint/MD_CHKPT_1500000.chkpt" />
     </particle_source>
 
 </configuration>
