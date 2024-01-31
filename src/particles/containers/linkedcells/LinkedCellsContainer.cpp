@@ -169,9 +169,9 @@ void LinkedCellsContainer::applyPairwiseForces(const std::vector<std::shared_ptr
                         neighbour_particle->setF(neighbour_particle->getF() - force);
                     }
                 }
-
                 neighbour->addAlreadyInfluencedBy(cell);
             }
+
             // Code duplication, I don't like it either :/
             // calculate the forces between the particle and the particles in the neighbour cells
             for (Cell *neighbour : cell->getOrthNeighbourReferences())
@@ -199,7 +199,6 @@ void LinkedCellsContainer::applyPairwiseForces(const std::vector<std::shared_ptr
                         neighbour_particle->setF(neighbour_particle->getF() - force);
                     }
                 }
-
                 neighbour->addAlreadyInfluencedBy(cell);
             }
         }

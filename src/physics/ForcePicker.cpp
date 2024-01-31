@@ -25,7 +25,7 @@ const std::map<std::string, std::shared_ptr<PairwiseForceSource>> get_supported_
 
     auto lennardjones = std::make_shared<LennardJonesForce>();
     auto gravitational = std::make_shared<GravitationalForce>();
-    auto harmonic = std::make_shared<HarmonicPotential>();
+    auto harmonic = std::make_shared<HarmonicPotential>(0.0, 0.0);
 
     force_names.insert({std::string(*lennardjones), lennardjones});
     force_names.insert({std::string(*gravitational), gravitational});

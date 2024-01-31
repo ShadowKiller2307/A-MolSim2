@@ -195,12 +195,18 @@
     <xs:attribute name="g" type="xs:double" use="required" />
   </xs:complexType>
 
+  <xs:complexType name="HarmonicPotentialType">
+    <xs:attribute name="r0" type="xs:double" use="required" />
+    <xs:attribute name="k" type="xs:double" use="required" />
+  </xs:complexType>
+
 
   <xs:complexType name="ForcesType">
     <xs:all>
       <xs:element name="LennardJones" type="LennardJonesType" minOccurs="0" />
       <xs:element name="Gravitational" type="GravitationalType" minOccurs="0" />
       <xs:element name="GlobalDownwardsGravity" type="GlobalGravityType" minOccurs="0" />
+      <xs:element name="HarmonicPotential" type="HarmonicPotentialType" minOccurs="0" />
     </xs:all>
   </xs:complexType>
 

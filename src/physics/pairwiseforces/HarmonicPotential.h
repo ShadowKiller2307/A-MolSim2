@@ -11,8 +11,18 @@ class HarmonicPotential : public PairwiseForceSource
 {
 private:
 	constexpr static const double sqrt2 = 1.4142135623730951;
+	double r0;	   // equilibrium distance for orthaogonal particles
+	double r0sqrt; // equilibrium distance for diagonal particles
+	double k;	   // stiffness
 
 public:
+	/**
+	 * @brief Constructor for the HarmonicPotential class
+	 * @param r0 The equilibrium distance for orthaogonal particles
+	 * @param k The stiffness
+	 */
+	explicit HarmonicPotential(double r0, double k);
+
 	std::array<double, 3UL> calculateForce(Particle &p, Particle &q) const override;
 
 	/**
@@ -32,4 +42,12 @@ public:
 	 */
 	explicit
 	operator std::string() const override;
+
+	/**
+	 * @brief Sets the equilibrium distance and stiffness
+	 *
+	 * @param r0 The equilibrium distance for orthaogonal particles
+	 * @param k The stiffness
+	 */
+	void setR0andK(double r0, double k);
 };
