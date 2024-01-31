@@ -12,19 +12,33 @@
  * @brief Extension of the `ParticleContainer` class using a linked cells data structure for improved performance over the direct sum
  * approach
  */
-class LinkedCellsContainer : public ParticleContainer {
-   public:
+class LinkedCellsContainer : public ParticleContainer
+{
+public:
     /**
      * @brief Boundary type enum for labeling the sides of the domain
      */
-    enum class BoundaryCondition { OUTFLOW, REFLECTIVE, PERIODIC };
+    enum class BoundaryCondition
+    {
+        OUTFLOW,
+        REFLECTIVE,
+        PERIODIC
+    };
 
     /**
      * @brief Boundary side enum for labeling the sides of the domain
      */
-    enum class BoundarySide { LEFT, RIGHT, BOTTOM, TOP, BACK, FRONT };
+    enum class BoundarySide
+    {
+        LEFT,
+        RIGHT,
+        BOTTOM,
+        TOP,
+        BACK,
+        FRONT
+    };
 
-   public:
+public:
     /**
      * @brief Construct a new Linked Cells Particle Container object
      *
@@ -43,8 +57,8 @@ class LinkedCellsContainer : public ParticleContainer {
      * cells that are used for boundary condition handling. Therefore the valid cell coordinates range from -1 to domain_num_cells[i] in
      * each dimension (i = 0 -> x; i = 1 -> y; i = 2 -> z).
      */
-    LinkedCellsContainer(const std::array<double, 3>& domain_size, double cutoff_radius,
-                         const std::array<BoundaryCondition, 6>& boundary_types = {BoundaryCondition::OUTFLOW, BoundaryCondition::OUTFLOW,
+    LinkedCellsContainer(const std::array<double, 3> &domain_size, double cutoff_radius,
+                         const std::array<BoundaryCondition, 6> &boundary_types = {BoundaryCondition::OUTFLOW, BoundaryCondition::OUTFLOW,
                                                                                    BoundaryCondition::OUTFLOW, BoundaryCondition::OUTFLOW,
                                                                                    BoundaryCondition::OUTFLOW, BoundaryCondition::OUTFLOW},
                          int n = 0);
@@ -56,7 +70,7 @@ class LinkedCellsContainer : public ParticleContainer {
      *
      * Adds a particle to the container and correctly inserts it into the cell structure.
      */
-    void addParticle(const Particle& p) override;
+    void addParticle(const Particle &p) override;
 
     /**
      * @brief Adds a particle to the container
@@ -65,7 +79,7 @@ class LinkedCellsContainer : public ParticleContainer {
      *
      * Adds a particle to the container and correctly inserts it into the cell structure.
      */
-    void addParticle(Particle&& p) override;
+    void addParticle(Particle &&p) override;
 
     /**
      * @brief Prepares everything for the force calculations (must be called before applySimpleForces and applyPairwiseForces)
@@ -79,7 +93,7 @@ class LinkedCellsContainer : public ParticleContainer {
      *
      * Applies the given simple force sources to the particles in the container.
      */
-    void applySimpleForces(const std::vector<std::shared_ptr<SimpleForceSource>>& simple_force_sources) override;
+    void applySimpleForces(const std::vector<std::shared_ptr<SimpleForceSource>> &simple_force_sources) override;
 
     /**
      * @brief Applies the given force sources to the particles
@@ -91,7 +105,7 @@ class LinkedCellsContainer : public ParticleContainer {
      * Additionally to the functionality of the `ParticleContainer` class, this method uses the internal cell structure to
      * reduce the number of force calculations necessary, depending on the cutoff radius.
      */
-    void applyPairwiseForces(const std::vector<std::shared_ptr<PairwiseForceSource>>& force_sources) override;
+    void applyPairwiseForces(const std::vector<std::shared_ptr<PairwiseForceSource>> &force_sources) override;
 
     /**
      * @brief Reserves space for n particles. This is useful if the number of particles is known in advance
@@ -114,7 +128,7 @@ class LinkedCellsContainer : public ParticleContainer {
      * @param i Index of the particle
      * @return Particle
      */
-    Particle& operator[](int i) override;
+    Particle &operator[](int i) override;
 
     /**
      * @brief The begin iterator for the internal data structure.
@@ -148,7 +162,7 @@ class LinkedCellsContainer : public ParticleContainer {
      * @brief Returns a vector of all particles in the container
      * @return Vector of all particles in the container
      */
-    [[nodiscard]] const std::vector<Particle>& getParticles() const override;
+    [[nodiscard]] const std::vector<Particle> &getParticles() const override;
 
     /**
      * @brief Returns the domain size
@@ -157,7 +171,7 @@ class LinkedCellsContainer : public ParticleContainer {
      *
      * Returns the domain size as a 3D array.
      */
-    const std::array<double, 3>& getDomainSize() const;
+    const std::array<double, 3> &getDomainSize() const;
 
     /**
      * @brief Returns the cutoff radius
@@ -175,7 +189,7 @@ class LinkedCellsContainer : public ParticleContainer {
      *
      * Returns the cells as a vector of `Cell` objects.
      */
-    const std::vector<Cell>& getCells();
+    const std::vector<Cell> &getCells();
 
     /**
      * @brief Returns the pointers of the boundary cells
@@ -184,7 +198,7 @@ class LinkedCellsContainer : public ParticleContainer {
      *
      * Returns the pointers of the boundary cells in a vector.
      */
-    const std::vector<Cell*>& getBoundaryCells() const;
+    const std::vector<Cell *> &getBoundaryCells() const;
 
     /**
      * @brief Returns the cell size
@@ -193,7 +207,7 @@ class LinkedCellsContainer : public ParticleContainer {
      *
      * Returns the cell size as a 3D array.
      */
-    const std::array<double, 3>& getCellSize() const;
+    const std::array<double, 3> &getCellSize() const;
 
     /**
      * @brief Returns the number of cells in each dimension
@@ -202,7 +216,7 @@ class LinkedCellsContainer : public ParticleContainer {
      *
      * Returns the number of cells in each dimension as a 3D array.
      */
-    const std::array<int, 3>& getDomainNumCells() const;
+    const std::array<int, 3> &getDomainNumCells() const;
 
     /**
      * @brief Maps the cell coordinates to the corresponding index in the internal cell vector
@@ -220,7 +234,7 @@ class LinkedCellsContainer : public ParticleContainer {
      * @param pos Position of the particle
      * @return index of the cell if it exists, -1 otherwise
      */
-    Cell* particlePosToCell(const std::array<double, 3>& pos);
+    Cell *particlePosToCell(const std::array<double, 3> &pos);
 
     /**
      * @brief Maps the particle position to the corresponding cell index in the internal cell vector
@@ -230,14 +244,14 @@ class LinkedCellsContainer : public ParticleContainer {
      * @param z z coordinate of the particle
      * @return index of the cell if it exists, -1 otherwise
      */
-    Cell* particlePosToCell(double x, double y, double z);
+    Cell *particlePosToCell(double x, double y, double z);
 
     /**
      * @brief Returns a string description of a boundary condition
      */
-    static std::string boundaryConditionToString(const BoundaryCondition& bc);
+    static std::string boundaryConditionToString(const BoundaryCondition &bc);
 
-   private:
+private:
     /**
      * @brief Populates the cell vector and sets the cells types
      */
@@ -274,7 +288,7 @@ class LinkedCellsContainer : public ParticleContainer {
      */
     friend class PeriodicBoundaryType;
 
-   private:
+private:
     /**
      * @brief Internal data structure for the particles
      */
@@ -313,85 +327,85 @@ class LinkedCellsContainer : public ParticleContainer {
     /**
      * @brief References to the domain cells
      */
-    std::vector<Cell*> domain_cell_references;
+    std::vector<Cell *> domain_cell_references;
 
     /**
      * @brief References to the boundary cells
      */
-    std::vector<Cell*> boundary_cell_references;
+    std::vector<Cell *> boundary_cell_references;
 
     /**
      * @brief References to the halo cells
      */
-    std::vector<Cell*> halo_cell_references;
+    std::vector<Cell *> halo_cell_references;
 
     /**
      * @brief Temporary storage for references of cells that contain at least one particle to avoid iteration over empty cells. Uses
      * unordered_set to avoid duplicate inserts.
      */
-    std::unordered_set<Cell*> occupied_cells_references;
+    std::unordered_set<Cell *> occupied_cells_references;
 
     // Boundary cell references with respect to x-axis pointing to the right, y-axis pointing up and z axis pointing out of the screen
 
     /**
      * @brief References to the boundary cells on the left (x = 0)
      */
-    std::vector<Cell*> left_boundary_cell_references;
+    std::vector<Cell *> left_boundary_cell_references;
 
     /**
      * @brief References to the boundary cells on the right (x = domain_num_cells[0]-1)
      */
-    std::vector<Cell*> right_boundary_cell_references;
+    std::vector<Cell *> right_boundary_cell_references;
 
     /**
      * @brief References to the boundary cells on the bottom (y = 0)
      */
-    std::vector<Cell*> bottom_boundary_cell_references;
+    std::vector<Cell *> bottom_boundary_cell_references;
 
     /**
      * @brief References to the boundary cells on the top (y = domain_num_cells[1]-1)
      */
-    std::vector<Cell*> top_boundary_cell_references;
+    std::vector<Cell *> top_boundary_cell_references;
 
     /**
      * @brief References to the boundary cells on the back (z = 0)
      */
-    std::vector<Cell*> back_boundary_cell_references;
+    std::vector<Cell *> back_boundary_cell_references;
 
     /**
      * @brief References to the boundary cells on the front (z = domain_num_cells[2]-1)
      */
-    std::vector<Cell*> front_boundary_cell_references;
+    std::vector<Cell *> front_boundary_cell_references;
 
     // Halo cell references with respect to x-axis pointing to the right, y-axis pointing up and z axis pointing out of the screen
 
     /**
      * @brief References to the halo cells on the left (x = -1)
      */
-    std::vector<Cell*> left_halo_cell_references;
+    std::vector<Cell *> left_halo_cell_references;
 
     /**
      * @brief References to the halo cells on the right (x = domain_num_cells[0])
      */
-    std::vector<Cell*> right_halo_cell_references;
+    std::vector<Cell *> right_halo_cell_references;
 
     /**
      * @brief References to the halo cells on the bottom (y = -1)
      */
-    std::vector<Cell*> bottom_halo_cell_references;
+    std::vector<Cell *> bottom_halo_cell_references;
 
     /**
      * @brief References to the halo cells on the top (y = domain_num_cells[1])
      */
-    std::vector<Cell*> top_halo_cell_references;
+    std::vector<Cell *> top_halo_cell_references;
 
     /**
      * @brief References to the halo cells on the back (z = -1)
      */
-    std::vector<Cell*> back_halo_cell_references;
+    std::vector<Cell *> back_halo_cell_references;
 
     /**
      * @brief References to the halo cells on the front (z = domain_num_cells[2])
      */
-    std::vector<Cell*> front_halo_cell_references;
+    std::vector<Cell *> front_halo_cell_references;
 };
