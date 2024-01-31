@@ -9,6 +9,7 @@
 #include "io/output/OutputFormats.h"
 #include "physics/ForcePicker.h"
 #include "physics/simpleforces/GlobalDownwardsGravity.h"
+#include "physics/pairwiseforces/HarmonicPotential.h"
 #include "simulation/SimulationParams.h"
 #include "utils/StringUtils.h"
 
@@ -65,7 +66,20 @@ std::tuple<std::vector<std::shared_ptr<SimpleForceSource>>, std::vector<std::sha
 
         if (pairwise_force_it != supported_pairwise_forces.end())
         {
+            if (typeid(simple_force_it->second) == typeid(HarmonicPotential))
+            {
+                if (force_args.size() != 3)
+                {
+                    Logger::logger->error("Invalid force given: {}. Harmonic Potential needs two parameters: r0, k", force_s);
+                    throw std::runtime_error("Invalid force given");
+                }
+                auto r0 = std::stod(force_args[1]);
+                auto k = std::stod(force_args[2]);
+                dynamic_cast<HarmonicPotential &>(*simple_force_it->second).setR0andK(r0, k);
 
+                pairwise_forces.push_back(pairwise_force_it->second);
+                continue;
+            }
             pairwise_forces.push_back(pairwise_force_it->second);
             continue;
         }
