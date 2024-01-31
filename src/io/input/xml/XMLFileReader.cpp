@@ -123,8 +123,21 @@ std::tuple<std::vector<Particle>, SimulationParams> prepareParticles(std::filesy
 
     auto forces = XSDToInternalTypeAdapter::convertToForces(settings.forces());
 
+    int strategy = 0;
+    int nr_threads = 8;
+
+    if(settings.strategy().present()){
+        Logger::logger->info("Strategy: {}", settings.strategy().get());
+        strategy = settings.strategy().get();
+        if(settings.nr_threads().present()){
+            Logger::logger->info("Number of threads: {}", settings.nr_threads().get());
+            nr_threads = settings.nr_threads().get();
+
+        }
+    }
+
     auto params = SimulationParams{curr_file_path, settings.delta_t(),  settings.end_time(), container_type,
-                                   interceptors,   std::get<0>(forces), std::get<1>(forces), false,
+                                   interceptors,   std::get<0>(forces), std::get<1>(forces),strategy,nr_threads, false,
                                    fresh,          output_base_path};
 
     if (output_base_path.empty()) {

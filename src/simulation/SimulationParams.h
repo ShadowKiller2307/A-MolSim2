@@ -113,6 +113,10 @@ class SimulationParams {
      */
     bool fresh;
 
+    int strategy;
+
+    int nr_threads;
+
     /**
      * @brief Construct a new SimulationParams object
      *
@@ -132,8 +136,12 @@ class SimulationParams {
                      const std::variant<DirectSumType, LinkedCellsType>& container_type,
                      const std::vector<std::shared_ptr<SimulationInterceptor>>& interceptors,
                      const std::vector<std::shared_ptr<SimpleForceSource>>& simple_forces,
-                     const std::vector<std::shared_ptr<PairwiseForceSource>>& pairwise_forces, bool performance_test = false,
-                     bool fresh = false, const std::filesystem::path& base_path = "./output");
+                     const std::vector<std::shared_ptr<PairwiseForceSource>>& pairwise_forces,
+                     const int strategy,const int nr_threads,
+                     bool performance_test = false,
+                     bool fresh = false,
+
+                     const std::filesystem::path& base_path = "./output");
 
     /**
      * @brief Prints a summary of the simulation parameters to the console
