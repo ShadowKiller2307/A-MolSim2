@@ -29,6 +29,7 @@ const std::map<std::string, std::shared_ptr<PairwiseForceSource>> get_supported_
 
     force_names.insert({std::string(*lennardjones), lennardjones});
     force_names.insert({std::string(*gravitational), gravitational});
+    force_names.insert({std::string(*harmonic), harmonic});
 
     return force_names;
 }
