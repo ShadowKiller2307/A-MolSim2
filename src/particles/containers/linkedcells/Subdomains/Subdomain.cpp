@@ -101,16 +101,10 @@ void Subdomain::updateSubdomain(const std::vector<std::shared_ptr<PairwiseForceS
         for (
             auto &cell
             : subdomainCells) {
-            for (
-                auto *particle
-                    : cell.second->
-                    getParticleReferences()
-                    ) {
-                const std::array<double, 3> new_v =
-                        particle->getV() +
+            for (auto *particle: cell.second->getParticleReferences()) {
+                const std::array<double, 3> new_v =particle->getV() +
                         (delta_t / (2 * particle->getM())) * (particle->getF() + particle->getOldF());
-                particle->
-                        setV(new_v);
+                particle->setV(new_v);
             }
         }
     }

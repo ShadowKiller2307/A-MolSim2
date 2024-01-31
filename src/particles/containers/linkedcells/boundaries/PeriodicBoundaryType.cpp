@@ -6,6 +6,7 @@
 
 void PeriodicBoundaryType::pre(LinkedCellsContainer& container) {
     if (container.boundary_types[0] == LinkedCellsContainer::LinkedCellsContainer::BoundaryCondition::PERIODIC) {
+        #pragma omp parallel for num_threads(8)
         for (Cell* cell : container.left_halo_cell_references) {
             for (Particle* p : cell->getParticleReferences()) {
                 std::array<double,3> positive_pos = makeArrayPositive(p->getX());
@@ -16,6 +17,7 @@ void PeriodicBoundaryType::pre(LinkedCellsContainer& container) {
     }
 
     if (container.boundary_types[1] == LinkedCellsContainer::LinkedCellsContainer::BoundaryCondition::PERIODIC) {
+         #pragma omp parallel for num_threads(8)
         for (Cell* cell : container.right_halo_cell_references) {
             for (Particle* p : cell->getParticleReferences()) {
                 std::array<double,3> positive_pos = makeArrayPositive(p->getX());
@@ -26,6 +28,7 @@ void PeriodicBoundaryType::pre(LinkedCellsContainer& container) {
     }
 
     if (container.boundary_types[2] == LinkedCellsContainer::LinkedCellsContainer::BoundaryCondition::PERIODIC) {
+         #pragma omp parallel for num_threads(8)
         for (Cell* cell : container.bottom_halo_cell_references) {
             for (Particle* p : cell->getParticleReferences()) {
                 std::array<double,3> positive_pos = makeArrayPositive(p->getX());
@@ -36,6 +39,7 @@ void PeriodicBoundaryType::pre(LinkedCellsContainer& container) {
     }
 
     if (container.boundary_types[3] == LinkedCellsContainer::LinkedCellsContainer::BoundaryCondition::PERIODIC) {
+         #pragma omp parallel for num_threads(8)
         for (Cell* cell : container.top_halo_cell_references) {
             for (Particle* p : cell->getParticleReferences()) {
                 std::array<double,3> positive_pos = makeArrayPositive(p->getX());
@@ -46,6 +50,7 @@ void PeriodicBoundaryType::pre(LinkedCellsContainer& container) {
     }
 
     if (container.boundary_types[4] == LinkedCellsContainer::LinkedCellsContainer::BoundaryCondition::PERIODIC) {
+         #pragma omp parallel for num_threads(8)
         for (Cell* cell : container.back_halo_cell_references) {
             for (Particle* p : cell->getParticleReferences()) {
                 std::array<double,3> positive_pos = makeArrayPositive(p->getX());
@@ -56,6 +61,7 @@ void PeriodicBoundaryType::pre(LinkedCellsContainer& container) {
     }
 
     if (container.boundary_types[5] == LinkedCellsContainer::LinkedCellsContainer::BoundaryCondition::PERIODIC) {
+         #pragma omp parallel for num_threads(8)
         for (Cell* cell : container.front_halo_cell_references) {
             for (Particle* p : cell->getParticleReferences()) {
                 std::array<double,3> positive_pos = makeArrayPositive(p->getX());
