@@ -147,8 +147,13 @@
       <xs:element name="forces" type="ForcesType" />
       <xs:element name="interceptors" type="SimulationInterceptorsType" />
       <xs:element name="log_level" type="LogLevelType" default="info" minOccurs="0" />
+      <xs:element name="strategy" type="xs:int" default="0" minOccurs="0" />
+      <xs:element name="nr_threads" type="xs:int" default="8" minOccurs="0" />
     </xs:sequence>
   </xs:complexType>
+
+
+
 
 
   <!-- Interceptors -->
