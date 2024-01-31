@@ -5400,6 +5400,152 @@ class SettingsType: public ::xml_schema::type
   //@}
 
   /**
+   * @name strategy
+   *
+   * @brief Accessor and modifier functions for the %strategy
+   * optional element.
+   */
+  //@{
+
+  /**
+   * @brief Element type.
+   */
+  typedef ::xml_schema::int_ strategy_type;
+
+  /**
+   * @brief Element optional container type.
+   */
+  typedef ::xsd::cxx::tree::optional< strategy_type > strategy_optional;
+
+  /**
+   * @brief Element traits type.
+   */
+  typedef ::xsd::cxx::tree::traits< strategy_type, char > strategy_traits;
+
+  /**
+   * @brief Return a read-only (constant) reference to the element
+   * container.
+   *
+   * @return A constant reference to the optional container.
+   */
+  const strategy_optional&
+  strategy () const;
+
+  /**
+   * @brief Return a read-write reference to the element container.
+   *
+   * @return A reference to the optional container.
+   */
+  strategy_optional&
+  strategy ();
+
+  /**
+   * @brief Set the element value.
+   *
+   * @param x A new value to set.
+   *
+   * This function makes a copy of its argument and sets it as
+   * the new value of the element.
+   */
+  void
+  strategy (const strategy_type& x);
+
+  /**
+   * @brief Set the element value.
+   *
+   * @param x An optional container with the new value to set.
+   *
+   * If the value is present in @a x then this function makes a copy 
+   * of this value and sets it as the new value of the element.
+   * Otherwise the element container is set the 'not present' state.
+   */
+  void
+  strategy (const strategy_optional& x);
+
+  /**
+   * @brief Return the default value for the element.
+   *
+   * @return The element's default value.
+   */
+  static strategy_type
+  strategy_default_value ();
+
+  //@}
+
+  /**
+   * @name nr_threads
+   *
+   * @brief Accessor and modifier functions for the %nr_threads
+   * optional element.
+   */
+  //@{
+
+  /**
+   * @brief Element type.
+   */
+  typedef ::xml_schema::int_ nr_threads_type;
+
+  /**
+   * @brief Element optional container type.
+   */
+  typedef ::xsd::cxx::tree::optional< nr_threads_type > nr_threads_optional;
+
+  /**
+   * @brief Element traits type.
+   */
+  typedef ::xsd::cxx::tree::traits< nr_threads_type, char > nr_threads_traits;
+
+  /**
+   * @brief Return a read-only (constant) reference to the element
+   * container.
+   *
+   * @return A constant reference to the optional container.
+   */
+  const nr_threads_optional&
+  nr_threads () const;
+
+  /**
+   * @brief Return a read-write reference to the element container.
+   *
+   * @return A reference to the optional container.
+   */
+  nr_threads_optional&
+  nr_threads ();
+
+  /**
+   * @brief Set the element value.
+   *
+   * @param x A new value to set.
+   *
+   * This function makes a copy of its argument and sets it as
+   * the new value of the element.
+   */
+  void
+  nr_threads (const nr_threads_type& x);
+
+  /**
+   * @brief Set the element value.
+   *
+   * @param x An optional container with the new value to set.
+   *
+   * If the value is present in @a x then this function makes a copy 
+   * of this value and sets it as the new value of the element.
+   * Otherwise the element container is set the 'not present' state.
+   */
+  void
+  nr_threads (const nr_threads_optional& x);
+
+  /**
+   * @brief Return the default value for the element.
+   *
+   * @return The element's default value.
+   */
+  static nr_threads_type
+  nr_threads_default_value ();
+
+  //@}
+
+  /**
    * @name Constructors
    */
   //@{
@@ -5508,6 +5654,8 @@ class SettingsType: public ::xml_schema::type
   ::xsd::cxx::tree::one< interceptors_type > interceptors_;
   log_level_optional log_level_;
   static const log_level_type log_level_default_value_;
+  strategy_optional strategy_;
+  nr_threads_optional nr_threads_;
 
   //@endcond
 };

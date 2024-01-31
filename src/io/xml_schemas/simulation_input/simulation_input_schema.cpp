@@ -1382,6 +1382,66 @@ log_level_default_value ()
   return log_level_default_value_;
 }
 
+const SettingsType::strategy_optional& SettingsType::
+strategy () const
+{
+  return this->strategy_;
+}
+
+SettingsType::strategy_optional& SettingsType::
+strategy ()
+{
+  return this->strategy_;
+}
+
+void SettingsType::
+strategy (const strategy_type& x)
+{
+  this->strategy_.set (x);
+}
+
+void SettingsType::
+strategy (const strategy_optional& x)
+{
+  this->strategy_ = x;
+}
+
+SettingsType::strategy_type SettingsType::
+strategy_default_value ()
+{
+  return strategy_type (0);
+}
+
+const SettingsType::nr_threads_optional& SettingsType::
+nr_threads () const
+{
+  return this->nr_threads_;
+}
+
+SettingsType::nr_threads_optional& SettingsType::
+nr_threads ()
+{
+  return this->nr_threads_;
+}
+
+void SettingsType::
+nr_threads (const nr_threads_type& x)
+{
+  this->nr_threads_.set (x);
+}
+
+void SettingsType::
+nr_threads (const nr_threads_optional& x)
+{
+  this->nr_threads_ = x;
+}
+
+SettingsType::nr_threads_type SettingsType::
+nr_threads_default_value ()
+{
+  return nr_threads_type (8);
+}
+
 
 // ParticleUpdatesPerSecondInterceptionType
 //
@@ -4163,7 +4223,9 @@ SettingsType (const delta_t_type& delta_t,
   particle_container_ (particle_container, this),
   forces_ (forces, this),
   interceptors_ (interceptors, this),
-  log_level_ (this)
+  log_level_ (this),
+  strategy_ (this),
+  nr_threads_ (this)
 {
 }
 
@@ -4181,7 +4243,9 @@ SettingsType (const delta_t_type& delta_t,
   particle_container_ (std::move (particle_container), this),
   forces_ (std::move (forces), this),
   interceptors_ (std::move (interceptors), this),
-  log_level_ (this)
+  log_level_ (this),
+  strategy_ (this),
+  nr_threads_ (this)
 {
 }
 
@@ -4196,7 +4260,9 @@ SettingsType (const SettingsType& x,
   particle_container_ (x.particle_container_, f, this),
   forces_ (x.forces_, f, this),
   interceptors_ (x.interceptors_, f, this),
-  log_level_ (x.log_level_, f, this)
+  log_level_ (x.log_level_, f, this),
+  strategy_ (x.strategy_, f, this),
+  nr_threads_ (x.nr_threads_, f, this)
 {
 }
 
@@ -4211,7 +4277,9 @@ SettingsType (const ::xercesc::DOMElement& e,
   particle_container_ (this),
   forces_ (this),
   interceptors_ (this),
-  log_level_ (this)
+  log_level_ (this),
+  strategy_ (this),
+  nr_threads_ (this)
 {
   if ((f & ::xml_schema::flags::base) == 0)
   {
@@ -4319,6 +4387,28 @@ parse (::xsd::cxx::xml::dom::parser< char >& p,
       }
     }
 
+    // strategy
+    //
+    if (n.name () == "strategy" && n.namespace_ ().empty ())
+    {
+      if (!this->strategy_)
+      {
+        this->strategy_.set (strategy_traits::create (i, f, this));
+        continue;
+      }
+    }
+
+    // nr_threads
+    //
+    if (n.name () == "nr_threads" && n.namespace_ ().empty ())
+    {
+      if (!this->nr_threads_)
+      {
+        this->nr_threads_.set (nr_threads_traits::create (i, f, this));
+        continue;
+      }
+    }
+
     break;
   }
 
@@ -4385,6 +4475,8 @@ operator= (const SettingsType& x)
     this->forces_ = x.forces_;
     this->interceptors_ = x.interceptors_;
     this->log_level_ = x.log_level_;
+    this->strategy_ = x.strategy_;
+    this->nr_threads_ = x.nr_threads_;
   }
 
   return *this;
@@ -6687,6 +6779,30 @@ operator<< (::xercesc::DOMElement& e, const SettingsType& i)
         e));
 
     s << *i.log_level ();
+  }
+
+  // strategy
+  //
+  if (i.strategy ())
+  {
+    ::xercesc::DOMElement& s (
+      ::xsd::cxx::xml::dom::create_element (
+        "strategy",
+        e));
+
+    s << *i.strategy ();
+  }
+
+  // nr_threads
+  //
+  if (i.nr_threads ())
+  {
+    ::xercesc::DOMElement& s (
+      ::xsd::cxx::xml::dom::create_element (
+        "nr_threads",
+        e));
+
+    s << *i.nr_threads ();
   }
 }
 
