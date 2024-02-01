@@ -12,7 +12,8 @@
 #include "io/logger/Logger.h"
 #include "utils/ArrayUtils.h"
 
-Particle::Particle(const Particle& other) {
+Particle::Particle(const Particle &other)
+{
     x = other.x;
     v = other.v;
     f = other.f;
@@ -25,7 +26,8 @@ Particle::Particle(const Particle& other) {
 }
 
 Particle::Particle(std::array<double, 3> x_arg, std::array<double, 3> v_arg, double m_arg, int type_arg, double epsilon_arg,
-                   double sigma_arg) {
+                   double sigma_arg)
+{
     x = x_arg;
     v = v_arg;
     m = m_arg;
@@ -34,11 +36,13 @@ Particle::Particle(std::array<double, 3> x_arg, std::array<double, 3> v_arg, dou
     sigma = sigma_arg;
     type = type_arg;
     old_f = {0., 0., 0.};
+    neighbours.reserve(3);
     Logger::logger->debug("Particle created");
 }
 
 Particle::Particle(std::array<double, 3> x_arg, std::array<double, 3> v_arg, std::array<double, 3> f_arg, std::array<double, 3> old_f_arg,
-                   double m_arg, int type_arg, double epsilon_arg, double sigma_arg) {
+                   double m_arg, int type_arg, double epsilon_arg, double sigma_arg)
+{
     x = x_arg;
     v = v_arg;
     f = f_arg;
@@ -47,26 +51,29 @@ Particle::Particle(std::array<double, 3> x_arg, std::array<double, 3> v_arg, std
     type = type_arg;
     epsilon = epsilon_arg;
     sigma = sigma_arg;
+    neighbours.reserve(3);
     Logger::logger->debug("Particle created");
 }
 
 Particle::~Particle() { Logger::logger->debug("Particle destroyed"); }
 
-void Particle::setX(const std::array<double, 3>& x_arg) { x = x_arg; }
+void Particle::setX(const std::array<double, 3> &x_arg) { x = x_arg; }
 
-void Particle::setV(const std::array<double, 3>& v_arg) { v = v_arg; }
+void Particle::setV(const std::array<double, 3> &v_arg) { v = v_arg; }
 
-void Particle::setF(const std::array<double, 3>& f_arg) { f = f_arg; }
+void Particle::setF(const std::array<double, 3> &f_arg) { f = f_arg; }
 
-void Particle::setOldF(const std::array<double, 3>& old_f_arg) { old_f = old_f_arg; }
+void Particle::setOldF(const std::array<double, 3> &old_f_arg) { old_f = old_f_arg; }
 
-const std::array<double, 3>& Particle::getX() const { return x; }
+void Particle::addNeighbour(std::ptrdiff_t offset, bool diagonal) { neighbours.push_back(std::make_pair(offset, diagonal)); }
 
-const std::array<double, 3>& Particle::getV() const { return v; }
+const std::array<double, 3> &Particle::getX() const { return x; }
 
-const std::array<double, 3>& Particle::getF() const { return f; }
+const std::array<double, 3> &Particle::getV() const { return v; }
 
-const std::array<double, 3>& Particle::getOldF() const { return old_f; }
+const std::array<double, 3> &Particle::getF() const { return f; }
+
+const std::array<double, 3> &Particle::getOldF() const { return old_f; }
 
 double Particle::getM() const { return m; }
 
@@ -76,21 +83,27 @@ double Particle::getSigma() const { return sigma; }
 
 int Particle::getType() const { return type; }
 
-std::string Particle::toString() const {
+const std::vector<std::pair<std::ptrdiff_t, bool>> &Particle::getNeighbours() const { return neighbours; }
+
+std::string Particle::toString() const
+{
     std::stringstream stream;
     stream << "Particle: X:" << x << " v: " << v << " f: " << f << " old_f: " << old_f << " type: " << type;
     return stream.str();
 }
 
-bool Particle::operator==(Particle& other) {
+bool Particle::operator==(Particle &other)
+{
     return (x == other.x) and (v == other.v) and (f == other.f) and (type == other.type) and (m == other.m) and (old_f == other.old_f);
 }
 
-bool Particle::operator==(const Particle& other) const {
+bool Particle::operator==(const Particle &other) const
+{
     return (x == other.x) and (v == other.v) and (f == other.f) and (type == other.type) and (m == other.m) and (old_f == other.old_f);
 }
 
-std::ostream& operator<<(std::ostream& stream, Particle& p) {
+std::ostream &operator<<(std::ostream &stream, Particle &p)
+{
     stream << p.toString();
     return stream;
 }

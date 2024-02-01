@@ -8,7 +8,9 @@
 #pragma once
 
 #include <array>
+#include <vector>
 #include <string>
+#include <cstddef>
 
 /**
  * @brief Class to represent a particle
@@ -17,8 +19,9 @@
  * A particle has a position, a velocity, a mass and a type.
  * Additionally, the current and previous force exerted on the particle is stored.
  */
-class Particle {
-   private:
+class Particle
+{
+private:
     /**
      * @brief Position of the particle
      */
@@ -60,8 +63,13 @@ class Particle {
      */
     int type;
 
-   public:
-    Particle(const Particle& other);
+    /**
+     * @brief Stores the neighbours of this particle as offsets in the particle array and a boolean indicating whether the particle is diagonal or not
+     */
+    std::vector<std::pair<std::ptrdiff_t, bool>> neighbours;
+
+public:
+    Particle(const Particle &other);
 
     Particle(std::array<double, 3> x_arg, std::array<double, 3> v_arg, double m_arg, int type = 0, double epsilon_arg = 1.0,
              double sigma_arg = 1.2);
@@ -76,48 +84,56 @@ class Particle {
      *
      * @param x New position
      */
-    void setX(const std::array<double, 3>& x);
+    void setX(const std::array<double, 3> &x);
 
     /**
      * @brief Sets the velocity of the particle
      *
      * @param v New velocity
      */
-    void setV(const std::array<double, 3>& v);
+    void setV(const std::array<double, 3> &v);
 
     /**
      * @brief Sets the force of the particle
      *
      * @param f New force
      */
-    void setF(const std::array<double, 3>& f);
+    void setF(const std::array<double, 3> &f);
 
     /**
      * @brief Sets the old force of the particle
      *
      * @param oldF New old force
      */
-    void setOldF(const std::array<double, 3>& oldF);
+    void setOldF(const std::array<double, 3> &oldF);
+
+    /**
+     * @brief Adds a neighbour to the particle
+     *
+     * @param offset Offset of the neighbour in the particle array
+     * @param diagonal Whether the neighbour is diagonal or not
+     */
+    void addNeighbour(std::ptrdiff_t offset, bool diagonal);
 
     /**
      * @brief Gets the position of the particle
      */
-    [[nodiscard]] const std::array<double, 3>& getX() const;
+    [[nodiscard]] const std::array<double, 3> &getX() const;
 
     /**
      * @brief Gets the velocity of the particle
      */
-    [[nodiscard]] const std::array<double, 3>& getV() const;
+    [[nodiscard]] const std::array<double, 3> &getV() const;
 
     /**
      * @brief Gets the total force of the particle
      */
-    [[nodiscard]] const std::array<double, 3>& getF() const;
+    [[nodiscard]] const std::array<double, 3> &getF() const;
 
     /**
      * @brief Gets the old total force of the particle
      */
-    [[nodiscard]] const std::array<double, 3>& getOldF() const;
+    [[nodiscard]] const std::array<double, 3> &getOldF() const;
 
     /**
      * @brief Gets the mass of the particle
@@ -139,11 +155,16 @@ class Particle {
      */
     [[nodiscard]] double getSigma() const;
 
-    bool operator==(Particle& other);
+    /**
+     * @brief Gets the neighbours of the particle
+     */
+    [[nodiscard]] const std::vector<std::pair<std::ptrdiff_t, bool>> &getNeighbours() const;
 
-    bool operator==(const Particle& other) const;
+    bool operator==(Particle &other);
+
+    bool operator==(const Particle &other) const;
 
     [[nodiscard]] std::string toString() const;
 };
 
-std::ostream& operator<<(std::ostream& stream, Particle& p);
+std::ostream &operator<<(std::ostream &stream, Particle &p);
