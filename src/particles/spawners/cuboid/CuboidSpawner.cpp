@@ -37,6 +37,7 @@ int CuboidSpawner::spawnParticles(std::vector<Particle> &particles) const
             }
         }
     }
+
     return grid_dimensions[0] * grid_dimensions[1] * grid_dimensions[2];
 }
 

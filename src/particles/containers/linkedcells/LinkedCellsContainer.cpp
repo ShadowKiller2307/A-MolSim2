@@ -52,10 +52,6 @@ void LinkedCellsContainer::addParticle(const Particle &p)
         Logger::logger->error("Particle to insert is out of bounds, position: [{}, {}, {}]", p.getX()[0], p.getX()[1], p.getX()[2]);
         throw std::runtime_error("Attempted to insert particle out of bounds");
     }
-    // if (cell->getCellType() == Cell::CellType::HALO) {
-    //     Logger::logger->warn("Particle to insert is in halo cell. Position: [{}, {}, {}]", p.getX()[0], p.getX()[1], p.getX()[2]);
-    //     throw std::runtime_error("Attempted to insert particle into halo cell");
-    // }
 
     size_t old_capacity = particles.capacity();
     particles.push_back(p);
@@ -79,10 +75,6 @@ void LinkedCellsContainer::addParticle(Particle &&p)
         Logger::logger->error("Particle to insert is outside of cells. Position: [{}, {}, {}]", p.getX()[0], p.getX()[1], p.getX()[2]);
         throw std::runtime_error("Attempted to insert particle out of bounds");
     }
-    // if (cell->getCellType() == Cell::CellType::HALO) {
-    //     Logger::logger->warn("Particle to insert is in halo cell. Position: [{}, {}, {}]", p.getX()[0], p.getX()[1], p.getX()[2]);
-    //     throw std::runtime_error("Attempted to insert particle into halo cell");
-    // }
 
     size_t old_capacity = particles.capacity();
     particles.push_back(std::move(p));
