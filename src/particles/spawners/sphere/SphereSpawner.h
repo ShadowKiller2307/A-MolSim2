@@ -11,8 +11,9 @@
  *
  * The radius is given in terms of number of particles along the radius.
  */
-class SphereSpawner : public ParticleSpawner {
-   private:
+class SphereSpawner : public ParticleSpawner
+{
+private:
     /**
      * @brief Defines the center of the sphere
      */
@@ -63,7 +64,7 @@ class SphereSpawner : public ParticleSpawner {
      */
     const bool third_dimension;
 
-   public:
+public:
     /**
      * @brief Constructor
      * @param center Center of the sphere
@@ -79,8 +80,8 @@ class SphereSpawner : public ParticleSpawner {
      *
      * Constructor to initialize the cuboid spawner. The velocity of the particles is jittered by a Maxwell-Boltzmann distribution.
      */
-    SphereSpawner(const std::array<double, 3>& center, int sphere_radius, double grid_spacing, double mass,
-                  const std::array<double, 3>& initial_velocity, int type, double epsilon = 1.0, double sigma = 1.2,
+    SphereSpawner(const std::array<double, 3> &center, int sphere_radius, double grid_spacing, double mass,
+                  const std::array<double, 3> &initial_velocity, int type, double epsilon = 1.0, double sigma = 1.2,
                   bool third_dimension = true, double initial_temperature = 0.1);
 
     /**
@@ -89,7 +90,7 @@ class SphereSpawner : public ParticleSpawner {
      * @return Number of particles spawned
      * Spawns particles in the given container.
      */
-    int spawnParticles(std::vector<Particle>& particles) const override;
+    int spawnParticles(std::vector<Particle> &particles) const override;
 
     /**
      * @brief Returns the number of particles to be spawned
