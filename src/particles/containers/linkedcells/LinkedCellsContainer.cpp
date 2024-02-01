@@ -828,13 +828,32 @@ void LinkedCellsContainer::parallel_step(const std::vector<std::shared_ptr<Simpl
         }
         prepareForceCalculation();
 
+        ReflectiveBoundaryType::applyBoundaryConditions(*this);
+        OutflowBoundaryType::applyBoundaryConditions(*this);
+        PeriodicBoundaryType::applyBoundaryConditions(*this);
+
+#pragma omp parallel for schedule(dynamic)
         for (auto &cell: cells) {
-            /*
+            omp_set_lock(cell.getLock());
+            for (auto *particle: cell.getParticleReferences()) { //directly apply gravitational
+                //force here for performance
+                auto currentF = particle->getF();
+                currentF[1] += particle->getM() * (-gravityConstant);
+                particle->setF(currentF);
+            }
+            omp_unset_lock(cell.getLock());
+        }
+
+#pragma omp parallel for schedule(dynamic)
+        for (auto &cell: cells) {
+
+/*
             only lock the cells which are at domain borders, because these are the only cells
             where race conflicts can occur(because every domain has at most one thread, so only one thread will
             work on the inner subdomain cells)
             whether the cell is at the subdomain border can be deduced from cell.first*/
-            //
+
+
             omp_set_lock(cell.getLock());
             for (auto it1 = cell.getParticleReferences().begin();
                  it1 != cell.getParticleReferences().end(); ++it1) {
@@ -842,9 +861,11 @@ void LinkedCellsContainer::parallel_step(const std::vector<std::shared_ptr<Simpl
                 // calculate the forces between the particle and the particles in the same cell
                 // uses direct sum with newtons third law
                 //simple force
-                auto currentF = p->getF();
-                currentF[1] += p->getM() * (-gravityConstant);
-                p->setF(currentF);
+
+                /* auto currentF = p->getF();
+                 currentF[1] += p->getM() * (-gravityConstant);
+                 p->setF(currentF);
+*/
 
                 for (auto it2 = (it1 + 1); it2 != cell.getParticleReferences().end(); ++it2) {
                     Particle *q = *it2;
@@ -918,22 +939,14 @@ void LinkedCellsContainer::parallel_step(const std::vector<std::shared_ptr<Simpl
         }
         prepareForceCalculation();
 
+        ReflectiveBoundaryType::applyBoundaryConditions(*this);
+        OutflowBoundaryType::applyBoundaryConditions(*this);
+        PeriodicBoundaryType::applyBoundaryConditions(*this);
+
 #pragma omp parallel
         {
 #pragma omp single
             {
-                std::vector<Cell *> occ_vector;
-                int i = 0;
-                //for (cell& : cell)
-                // int n = (occupied_cells_references.size() + 0.0) / std::ceil(omp_get_num_threads() + 0.0);
-                /* for (auto& cell: occupied_cells_references) {
-                     //here add the cells to vectors(size n) local to the threads
-                 }*/
-
-                //
-                /*for (int j = 0; j < occupied_cells_references.size(); ++j) {
-
-                }*/
                 for (auto *cell: occupied_cells_references) {
 #pragma omp task
                     //processCells(cellIndices for the thread)
