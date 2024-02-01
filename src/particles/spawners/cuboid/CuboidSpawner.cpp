@@ -20,6 +20,7 @@ CuboidSpawner::CuboidSpawner(const std::array<double, 3> &lower_left_corner, con
 
 int CuboidSpawner::spawnParticles(std::vector<Particle> &particles) const
 {
+    int offset = particles.size();
     particles.reserve(particles.size() + getEstimatedNumberOfParticles());
     for (int i = 0; i < grid_dimensions[0]; i++)
     {
@@ -38,7 +39,50 @@ int CuboidSpawner::spawnParticles(std::vector<Particle> &particles) const
         }
     }
 
+    // set up neighbours in the membrane
+    for (int i = 0; i < grid_dimensions[0]; i++)
+    {
+        for (int j = 0; j < grid_dimensions[1]; j++)
+        {
+            for (int k = 0; k < grid_dimensions[2]; k++)
+            {
+                const auto grid_pos = std::array<double, 3>{static_cast<double>(i), static_cast<double>(j), static_cast<double>(k)};
+                const auto x = lower_left_corner + grid_spacing * grid_pos;
+                const int indexP = getParticleIndexByPosition(offset, grid_pos);
+                // connect top three particles
+                for (int l = -1; l < 2; l++)
+                {
+                    const int indexQ = getParticleIndexByPosition(offset, {i + l, j + 1, k});
+                    if (indexQ == -1)
+                    {
+                        continue;
+                    }
+                    std::ptrdiff_t diff = &particles[indexQ] - &particles[indexP];
+                    particles[indexP].addNeighbour(diff, l == 0 ? false : true);
+                    particles[indexQ].addNeighbour(-diff, l == 0 ? false : true);
+                }
+                // connect right particle
+                const int indexQ = getParticleIndexByPosition(offset, {i + 1, j, k});
+                if (indexQ == -1)
+                {
+                    continue;
+                }
+                std::ptrdiff_t diff = &particles[indexQ] - &particles[indexP];
+                particles[indexP].addNeighbour(diff, false);
+                particles[indexQ].addNeighbour(-diff, false);
+            }
+        }
+    }
     return grid_dimensions[0] * grid_dimensions[1] * grid_dimensions[2];
+}
+
+const int CuboidSpawner::getParticleIndexByPosition(const int offset, const std::array<double, 3> &position) const
+{
+    if (position[0] < 0 || position[0] >= grid_dimensions[0] || position[1] < 0 || position[1] >= grid_dimensions[1] || position[2] < 0 || position[2] >= grid_dimensions[2])
+    {
+        return -1;
+    }
+    return offset + grid_dimensions[2] * grid_dimensions[1] * position[0] + grid_dimensions[2] * position[1] + position[2];
 }
 
 size_t CuboidSpawner::getEstimatedNumberOfParticles() const

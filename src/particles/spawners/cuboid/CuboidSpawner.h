@@ -64,6 +64,8 @@ private:
      */
     const double initial_temperature;
 
+    const int getParticleIndexByPosition(const int offset, const std::array<double, 3> &position) const;
+
 public:
     /**
      * @brief Constructor
