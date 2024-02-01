@@ -46,9 +46,7 @@ int CuboidSpawner::spawnParticles(std::vector<Particle> &particles) const
         {
             for (int k = 0; k < grid_dimensions[2]; k++)
             {
-                const auto grid_pos = std::array<double, 3>{static_cast<double>(i), static_cast<double>(j), static_cast<double>(k)};
-                const auto x = lower_left_corner + grid_spacing * grid_pos;
-                const int indexP = getParticleIndexByPosition(offset, grid_pos);
+                const int indexP = getParticleIndexByPosition(offset, {i, j, k});
                 // connect top three particles
                 for (int l = -1; l < 2; l++)
                 {
@@ -57,7 +55,7 @@ int CuboidSpawner::spawnParticles(std::vector<Particle> &particles) const
                     {
                         continue;
                     }
-                    std::ptrdiff_t diff = &particles[indexQ] - &particles[indexP];
+                    std::ptrdiff_t diff = &(particles[indexQ]) - &(particles[indexP]);
                     particles[indexP].addNeighbour(diff, l == 0 ? false : true);
                     particles[indexQ].addNeighbour(-diff, l == 0 ? false : true);
                 }

@@ -13,7 +13,7 @@ std::array<double, 3UL> HarmonicPotential::calculateForce(Particle &p) const
 		const bool is_diagonal = neighbour.second;
 		const Particle &q = *(&p + diff);
 		const double distance = ArrayUtils::L2Norm(p.getX() - q.getX());
-		force = force + k * (distance - (is_diagonal ? r0sqrt : r0)) * (1 / distance) * (p.getX() - q.getX());
+		force = force + -k * (distance - (is_diagonal ? r0sqrt : r0)) * (1 / distance) * (p.getX() - q.getX());
 	}
 
 	return force;

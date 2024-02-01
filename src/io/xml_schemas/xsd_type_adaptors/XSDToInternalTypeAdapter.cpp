@@ -4,13 +4,15 @@
 #include "physics/pairwiseforces/GravitationalForce.h"
 #include "physics/pairwiseforces/LennardJonesForce.h"
 #include "physics/simpleforces/GlobalDownwardsGravity.h"
+#include "physics/simpleforces/HarmonicPotential.h"
 #include "simulation/interceptors/frame_writer/FrameWriterInterceptor.h"
 #include "simulation/interceptors/particle_update_counter/ParticleUpdateCounterInterceptor.h"
 #include "simulation/interceptors/progress_bar/ProgressBarInterceptor.h"
 #include "simulation/interceptors/radial_distribution_function/RadialDistributionFunctionInterceptor.h"
 #include "simulation/interceptors/thermostat/ThermostatInterceptor.h"
 
-CuboidSpawner XSDToInternalTypeAdapter::convertToCuboidSpawner(const CuboidSpawnerType& cuboid, bool third_dimension) {
+CuboidSpawner XSDToInternalTypeAdapter::convertToCuboidSpawner(const CuboidSpawnerType &cuboid, bool third_dimension)
+{
     auto lower_left_front_corner = convertToVector(cuboid.lower_left_front_corner());
     auto grid_dimensions = convertToVector(cuboid.grid_dim());
     auto initial_velocity = convertToVector(cuboid.velocity());
@@ -22,37 +24,43 @@ CuboidSpawner XSDToInternalTypeAdapter::convertToCuboidSpawner(const CuboidSpawn
     auto sigma = cuboid.sigma();
     auto temperature = cuboid.temperature();
 
-    if (grid_dimensions[0] <= 0 || grid_dimensions[1] <= 0 || grid_dimensions[2] <= 0) {
+    if (grid_dimensions[0] <= 0 || grid_dimensions[1] <= 0 || grid_dimensions[2] <= 0)
+    {
         Logger::logger->error("Cuboid grid dimensions must be positive");
         throw std::runtime_error("Cuboid grid dimensions must be positive");
     }
 
-    if (!third_dimension && grid_dimensions[2] > 1) {
+    if (!third_dimension && grid_dimensions[2] > 1)
+    {
         Logger::logger->error("Cuboid grid dimensions must be 1 in z direction if third dimension is disabled");
         throw std::runtime_error("Cuboid grid dimensions must be 1 in z direction if third dimension is disabled");
     }
 
-    if (grid_spacing <= 0) {
+    if (grid_spacing <= 0)
+    {
         Logger::logger->error("Cuboid grid spacing must be positive");
         throw std::runtime_error("Cuboid grid spacing must be positive");
     }
 
-    if (mass <= 0) {
+    if (mass <= 0)
+    {
         Logger::logger->error("Cuboid mass must be positive");
         throw std::runtime_error("Cuboid mass must be positive");
     }
 
-    if (temperature < 0) {
+    if (temperature < 0)
+    {
         Logger::logger->error("Cuboid temperature must be positive");
         throw std::runtime_error("Cuboid temperature must be positive");
     }
 
     return CuboidSpawner{
         lower_left_front_corner, grid_dimensions, grid_spacing, mass, initial_velocity, static_cast<int>(type), epsilon, sigma,
-        third_dimension,         temperature};
+        third_dimension, temperature};
 }
 
-SphereSpawner XSDToInternalTypeAdapter::convertToSphereSpawner(const SphereSpawnerType& sphere, bool third_dimension) {
+SphereSpawner XSDToInternalTypeAdapter::convertToSphereSpawner(const SphereSpawnerType &sphere, bool third_dimension)
+{
     auto center = convertToVector(sphere.center());
     auto initial_velocity = convertToVector(sphere.velocity());
 
@@ -64,31 +72,36 @@ SphereSpawner XSDToInternalTypeAdapter::convertToSphereSpawner(const SphereSpawn
     auto sigma = sphere.sigma();
     auto temperature = sphere.temperature();
 
-    if (radius <= 0) {
+    if (radius <= 0)
+    {
         Logger::logger->error("Sphere radius must be positive");
         throw std::runtime_error("Sphere radius must be positive");
     }
 
-    if (grid_spacing <= 0) {
+    if (grid_spacing <= 0)
+    {
         Logger::logger->error("Sphere grid spacing must be positive");
         throw std::runtime_error("Sphere grid spacing must be positive");
     }
 
-    if (mass <= 0) {
+    if (mass <= 0)
+    {
         Logger::logger->error("Sphere mass must be positive");
         throw std::runtime_error("Sphere mass must be positive");
     }
 
-    if (temperature < 0) {
+    if (temperature < 0)
+    {
         Logger::logger->error("Sphere temperature must be positive");
         throw std::runtime_error("Sphere temperature must be positive");
     }
 
     return SphereSpawner{center, static_cast<int>(radius), grid_spacing, mass, initial_velocity, static_cast<int>(type), epsilon,
-                         sigma,  third_dimension,          temperature};
+                         sigma, third_dimension, temperature};
 }
 
-CuboidSpawner XSDToInternalTypeAdapter::convertToSingleParticleSpawner(const SingleParticleSpawnerType& particle, bool third_dimension) {
+CuboidSpawner XSDToInternalTypeAdapter::convertToSingleParticleSpawner(const SingleParticleSpawnerType &particle, bool third_dimension)
+{
     auto position = convertToVector(particle.position());
     auto initial_velocity = convertToVector(particle.velocity());
 
@@ -102,26 +115,31 @@ CuboidSpawner XSDToInternalTypeAdapter::convertToSingleParticleSpawner(const Sin
 }
 
 std::vector<std::shared_ptr<SimulationInterceptor>> XSDToInternalTypeAdapter::convertToSimulationInterceptors(
-    const SimulationInterceptorsType& interceptors, bool third_dimension) {
+    const SimulationInterceptorsType &interceptors, bool third_dimension)
+{
     std::vector<std::shared_ptr<SimulationInterceptor>> simulation_interceptors;
 
-    if (interceptors.Thermostat()) {
+    if (interceptors.Thermostat())
+    {
         auto thermostat = convertToThermostat(*interceptors.Thermostat(), third_dimension);
         simulation_interceptors.push_back(std::make_shared<ThermostatInterceptor>(thermostat));
     }
 
-    if (interceptors.ParticleUpdatesPerSecond()) {
+    if (interceptors.ParticleUpdatesPerSecond())
+    {
         simulation_interceptors.push_back(std::make_shared<ParticleUpdateCounterInterceptor>());
     }
 
-    if (interceptors.RadialDistributionFunction()) {
+    if (interceptors.RadialDistributionFunction())
+    {
         auto bin_width = interceptors.RadialDistributionFunction()->bin_width();
         auto sample_every_x_percent = interceptors.RadialDistributionFunction()->sample_every_x_percent();
 
         simulation_interceptors.push_back(std::make_shared<RadialDistributionFunctionInterceptor>(bin_width, sample_every_x_percent));
     }
 
-    if (interceptors.FrameWriter()) {
+    if (interceptors.FrameWriter())
+    {
         auto fps = interceptors.FrameWriter()->fps();
         auto video_length = interceptors.FrameWriter()->video_length_s();
         auto output_format = convertToOutputFormat(interceptors.FrameWriter()->output_format());
@@ -135,10 +153,12 @@ std::vector<std::shared_ptr<SimulationInterceptor>> XSDToInternalTypeAdapter::co
 }
 
 std::variant<SimulationParams::DirectSumType, SimulationParams::LinkedCellsType> XSDToInternalTypeAdapter::convertToParticleContainer(
-    const ParticleContainerType& particle_container) {
+    const ParticleContainerType &particle_container)
+{
     std::variant<SimulationParams::DirectSumType, SimulationParams::LinkedCellsType> container;
 
-    if (particle_container.linkedcells_container().present()) {
+    if (particle_container.linkedcells_container().present())
+    {
         auto container_data = *particle_container.linkedcells_container();
 
         auto domain_size = XSDToInternalTypeAdapter::convertToVector(container_data.domain_size());
@@ -146,9 +166,13 @@ std::variant<SimulationParams::DirectSumType, SimulationParams::LinkedCellsType>
         auto boundary_conditions = XSDToInternalTypeAdapter::convertToBoundaryConditionsArray(container_data.boundary_conditions());
 
         container = SimulationParams::LinkedCellsType(domain_size, cutoff_radius, boundary_conditions);
-    } else if (particle_container.directsum_container().present()) {
+    }
+    else if (particle_container.directsum_container().present())
+    {
         container = SimulationParams::DirectSumType();
-    } else {
+    }
+    else
+    {
         Logger::logger->error("Container type not implemented");
         throw std::runtime_error("Container type not implemented");
     }
@@ -157,7 +181,8 @@ std::variant<SimulationParams::DirectSumType, SimulationParams::LinkedCellsType>
 }
 
 std::array<LinkedCellsContainer::BoundaryCondition, 6> XSDToInternalTypeAdapter::convertToBoundaryConditionsArray(
-    const BoundaryConditionsType& boundary) {
+    const BoundaryConditionsType &boundary)
+{
     std::array<LinkedCellsContainer::BoundaryCondition, 6> boundary_conditions;
 
     boundary_conditions[0] = convertToBoundaryCondition(boundary.left());
@@ -170,36 +195,42 @@ std::array<LinkedCellsContainer::BoundaryCondition, 6> XSDToInternalTypeAdapter:
     return boundary_conditions;
 }
 
-LinkedCellsContainer::BoundaryCondition XSDToInternalTypeAdapter::convertToBoundaryCondition(const BoundaryType& boundary) {
-    switch (boundary) {
-        case BoundaryType::value::Outflow:
-            return LinkedCellsContainer::BoundaryCondition::OUTFLOW;
-        case BoundaryType::value::Reflective:
-            return LinkedCellsContainer::BoundaryCondition::REFLECTIVE;
-        case BoundaryType::value::Periodic:
-            return LinkedCellsContainer::BoundaryCondition::PERIODIC;
-        default:
-            Logger::logger->error("Boundary condition not implemented");
-            throw std::runtime_error("Boundary condition not implemented");
+LinkedCellsContainer::BoundaryCondition XSDToInternalTypeAdapter::convertToBoundaryCondition(const BoundaryType &boundary)
+{
+    switch (boundary)
+    {
+    case BoundaryType::value::Outflow:
+        return LinkedCellsContainer::BoundaryCondition::OUTFLOW;
+    case BoundaryType::value::Reflective:
+        return LinkedCellsContainer::BoundaryCondition::REFLECTIVE;
+    case BoundaryType::value::Periodic:
+        return LinkedCellsContainer::BoundaryCondition::PERIODIC;
+    default:
+        Logger::logger->error("Boundary condition not implemented");
+        throw std::runtime_error("Boundary condition not implemented");
     }
 }
 
-Thermostat XSDToInternalTypeAdapter::convertToThermostat(const ThermostatInterceptorType& thermostat, bool third_dimension) {
+Thermostat XSDToInternalTypeAdapter::convertToThermostat(const ThermostatInterceptorType &thermostat, bool third_dimension)
+{
     auto target_temperature = thermostat.target_temperature();
     auto max_temperature_change = thermostat.max_temperature_change();
     auto application_interval = thermostat.application_interval();
 
-    if (target_temperature < 0) {
+    if (target_temperature < 0)
+    {
         Logger::logger->error("Target temperature must be positive");
         throw std::runtime_error("Target temperature must be positive");
     }
 
-    if (max_temperature_change < 0) {
+    if (max_temperature_change < 0)
+    {
         Logger::logger->error("Max temperature change must be an absolute value (positive)");
         throw std::runtime_error("Max temperature change must be an absolute value (positive)");
     }
 
-    if (application_interval <= 0) {
+    if (application_interval <= 0)
+    {
         Logger::logger->error("Application interval must be a positive integer > 0");
         throw std::runtime_error("Application interval must be a positive integer > 0");
     }
@@ -207,7 +238,8 @@ Thermostat XSDToInternalTypeAdapter::convertToThermostat(const ThermostatInterce
     return Thermostat{target_temperature, max_temperature_change, static_cast<size_t>(application_interval), third_dimension};
 }
 
-Particle XSDToInternalTypeAdapter::convertToParticle(const ParticleType& particle) {
+Particle XSDToInternalTypeAdapter::convertToParticle(const ParticleType &particle)
+{
     auto position = XSDToInternalTypeAdapter::convertToVector(particle.position());
     auto velocity = XSDToInternalTypeAdapter::convertToVector(particle.velocity());
     auto force = XSDToInternalTypeAdapter::convertToVector(particle.force());
@@ -215,7 +247,8 @@ Particle XSDToInternalTypeAdapter::convertToParticle(const ParticleType& particl
     auto type = particle.type();
     auto mass = particle.mass();
 
-    if (mass <= 0) {
+    if (mass <= 0)
+    {
         Logger::logger->error("Particle mass must be positive");
         throw std::runtime_error("Particle mass must be positive");
     }
@@ -224,26 +257,37 @@ Particle XSDToInternalTypeAdapter::convertToParticle(const ParticleType& particl
 }
 
 std::tuple<std::vector<std::shared_ptr<SimpleForceSource>>, std::vector<std::shared_ptr<PairwiseForceSource>>>
-XSDToInternalTypeAdapter::convertToForces(const ForcesType& forces) {
+XSDToInternalTypeAdapter::convertToForces(const ForcesType &forces)
+{
     std::vector<std::shared_ptr<SimpleForceSource>> simple_force_sources;
     std::vector<std::shared_ptr<PairwiseForceSource>> pairwise_force_sources;
 
-    if (forces.LennardJones()) {
+    if (forces.LennardJones())
+    {
         pairwise_force_sources.push_back(std::make_shared<LennardJonesForce>());
     }
-    if (forces.Gravitational()) {
+    if (forces.Gravitational())
+    {
         pairwise_force_sources.push_back(std::make_shared<GravitationalForce>());
     }
-    if (forces.GlobalDownwardsGravity()) {
+    if (forces.GlobalDownwardsGravity())
+    {
         auto g = (*forces.GlobalDownwardsGravity()).g();
         simple_force_sources.push_back(std::make_shared<GlobalDownwardsGravity>(g));
+    }
+    if (forces.Harmonic())
+    {
+        double r0 = (*forces.Harmonic()).r0();
+        double k = (*forces.Harmonic()).k();
+        simple_force_sources.push_back(std::make_shared<HarmonicPotential>(r0, k));
     }
 
     return {simple_force_sources, pairwise_force_sources};
 }
 
-std::array<double, 3> XSDToInternalTypeAdapter::convertToVector(const DoubleVec3Type& vector) {
+std::array<double, 3> XSDToInternalTypeAdapter::convertToVector(const DoubleVec3Type &vector)
+{
     return {vector.x(), vector.y(), vector.z()};
 }
 
-std::array<int, 3> XSDToInternalTypeAdapter::convertToVector(const IntVec3Type& vector) { return {vector.x(), vector.y(), vector.z()}; }
+std::array<int, 3> XSDToInternalTypeAdapter::convertToVector(const IntVec3Type &vector) { return {vector.x(), vector.y(), vector.z()}; }

@@ -22,6 +22,7 @@ Particle::Particle(const Particle &other)
     type = other.type;
     epsilon = other.epsilon;
     sigma = other.sigma;
+    neighbours = other.neighbours;
     Logger::logger->debug("Particle created");
 }
 
