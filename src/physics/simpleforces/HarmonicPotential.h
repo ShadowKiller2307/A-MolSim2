@@ -1,6 +1,6 @@
 #pragma once
 
-#include "physics/pairwiseforces/PairwiseForceSource.h"
+#include "physics/simpleforces/SimpleForceSource.h"
 
 /**
  *  @brief Class to calculate the harmonic force between particles. Implements the interface PairwiseForceSource.
