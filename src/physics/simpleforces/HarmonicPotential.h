@@ -7,7 +7,7 @@
  *
  * Implementation of the force calculation to simulate harmonic forces between particles.
  */
-class HarmonicPotential : public PairwiseForceSource
+class HarmonicPotential : public SimpleForceSource
 {
 private:
 	constexpr static const double sqrt2 = 1.4142135623730951;
@@ -23,8 +23,6 @@ public:
 	 */
 	explicit HarmonicPotential(double r0, double k);
 
-	std::array<double, 3UL> calculateForce(Particle &p, Particle &q) const override;
-
 	/**
 	 * @brief Calculates the harmonic forces between two orthogonal or diagonal particles
 	 *
@@ -35,7 +33,7 @@ public:
 	 *
 	 * Calculates the harmonic force which q exerts on p
 	 */
-	std::array<double, 3UL> calculateForce(Particle &p, Particle &q, bool is_diagonal) const;
+	std::array<double, 3UL> calculateForce(Particle &p) const override;
 
 	/**
 	 * @brief Returns "Harmonic" as name of the force

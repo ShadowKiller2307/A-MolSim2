@@ -6,14 +6,17 @@
 #include "physics/pairwiseforces/GravitationalForce.h"
 #include "physics/pairwiseforces/LennardJonesForce.h"
 #include "physics/simpleforces/GlobalDownwardsGravity.h"
+#include "physics/simpleforces/HarmonicPotential.h"
 
 const std::map<std::string, std::shared_ptr<SimpleForceSource>> get_supported_simple_forces()
 {
     std::map<std::string, std::shared_ptr<SimpleForceSource>> force_names;
 
     auto global_downwards_gravity = std::make_shared<GlobalDownwardsGravity>(0);
+    auto harmonic = std::make_shared<HarmonicPotential>(0.0, 0.0);
 
     force_names.insert({std::string(*global_downwards_gravity), global_downwards_gravity});
+    force_names.insert({std::string(*harmonic), harmonic});
 
     return force_names;
 }
