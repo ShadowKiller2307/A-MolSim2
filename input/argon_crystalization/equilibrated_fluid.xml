@@ -33,6 +33,8 @@
             <Thermostat target_temperature="3.0" max_temperature_change="0.001" application_interval="40"
                 />
         </interceptors>
+        <strategy>0</strategy>
+        <nr_threads>1</nr_threads>
     </settings>
 
 

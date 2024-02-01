@@ -31,6 +31,8 @@
         <interceptors>
             <FrameWriter output_format="vtu" fps="60" video_length_s="30" />
         </interceptors>
+        <strategy>0</strategy>
+        <nr_threads>1</nr_threads>
     </settings>
 
     <particle_source>

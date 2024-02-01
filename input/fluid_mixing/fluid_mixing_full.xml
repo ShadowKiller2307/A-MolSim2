@@ -34,6 +34,8 @@
                 max_temperature_change="INF" />
             <FrameWriter output_format="vtu" fps="24" video_length_s="30" />
         </interceptors>
+        <strategy>0</strategy>
+        <nr_threads>1</nr_threads>
     </settings>
 
 

@@ -33,6 +33,8 @@
             <FrameWriter output_format="vtu" fps="24" video_length_s="30" />
             <Diffusion></Diffusion>
         </interceptors>
+        <strategy>0</strategy>
+        <nr_threads>1</nr_threads>
     </settings>
 
 

@@ -32,6 +32,8 @@
             <FrameWriter output_format="vtu" fps="24" video_length_s="30" />
             <Thermostat target_temperature="0.02" application_interval="25" max_temperature_change="0.0025"/>
         </interceptors>
+        <strategy>0</strategy>
+        <nr_threads>1</nr_threads>
     </settings>
 
 

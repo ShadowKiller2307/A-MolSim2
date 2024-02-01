@@ -28,6 +28,8 @@
             <LennardJones />
         </forces>
         <interceptors />
+        <strategy>0</strategy>
+        <nr_threads>1</nr_threads>
     </settings>
 
     <particle_source>
