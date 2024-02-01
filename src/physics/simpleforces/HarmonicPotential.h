@@ -3,7 +3,7 @@
 #include "physics/simpleforces/SimpleForceSource.h"
 
 /**
- *  @brief Class to calculate the harmonic force between particles. Implements the interface PairwiseForceSource.
+ *  @brief Class to calculate the harmonic force between particles. Implements the interface SimpleForceSource.
  *
  * Implementation of the force calculation to simulate harmonic forces between particles.
  */
@@ -27,8 +27,6 @@ public:
 	 * @brief Calculates the harmonic forces between two orthogonal or diagonal particles
 	 *
 	 * @param p Particle
-	 * @param q Particle
-	 * @param is_diagonal true if p and q are diagonal, false if they are orthogonal
 	 * @return harmonic force exerted by q on p
 	 *
 	 * Calculates the harmonic force which q exerts on p

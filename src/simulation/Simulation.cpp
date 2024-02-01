@@ -19,6 +19,7 @@
 #include "simulation/interceptors/progress_bar/ProgressBarInterceptor.h"
 #include "simulation/interceptors/radial_distribution_function/RadialDistributionFunctionInterceptor.h"
 #include "simulation/interceptors/thermostat/ThermostatInterceptor.h"
+#include "physics/simpleforces/PullUpForce.h"
 
 Simulation::Simulation(const std::vector<Particle> &initial_particles, const SimulationParams &params, IntegrationMethod integration_method)
     : params(params), integration_functor(get_integration_functor(integration_method))
@@ -71,10 +72,17 @@ SimulationOverview Simulation::runSimulation()
     }
 
     auto t_start = std::chrono::high_resolution_clock::now();
-
+    std::vector<std::shared_ptr<SimpleForceSource>> pullup_force = {};
+    // how much to pull the particles upward
+    pullup_force.push_back(std::make_shared<PullUpForce>(0.8));
     while (simulated_time < params.end_time)
     {
         integration_functor->step(particle_container, params.simple_forces, params.pairwise_forces, params.delta_t);
+        if (simulated_time < 150)
+        {
+            // apply pull up force
+            particle_container->applySimpleForces(pullup_force);
+        }
 
         ++iteration;
         simulated_time += params.delta_t;

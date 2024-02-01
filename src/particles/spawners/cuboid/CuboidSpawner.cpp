@@ -31,8 +31,12 @@ int CuboidSpawner::spawnParticles(std::vector<Particle> &particles) const
                 const auto grid_pos = std::array<double, 3>{static_cast<double>(i), static_cast<double>(j), static_cast<double>(k)};
 
                 const auto x = lower_left_corner + grid_spacing * grid_pos;
-
-                Particle particle(x, initial_velocity, mass, type, epsilon, sigma);
+                int actual_type = type;
+                if (i > 16 && i < 19 && j > 23 && j < 26)
+                {
+                    actual_type = 1;
+                }
+                Particle particle(x, initial_velocity, mass, actual_type, epsilon, sigma);
                 Thermostat::setParticleTemperature(initial_temperature, particle, third_dimension ? 3 : 2);
                 particles.push_back(std::move(particle));
             }

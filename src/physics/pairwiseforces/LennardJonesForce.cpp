@@ -2,10 +2,14 @@
 
 #include "utils/ArrayUtils.h"
 
-std::array<double, 3UL> LennardJonesForce::calculateForce(Particle& p, Particle& q) const {
+std::array<double, 3UL> LennardJonesForce::calculateForce(Particle &p, Particle &q) const
+{
     const auto displacement = q.getX() - p.getX();
     const double dist = ArrayUtils::L2Norm(displacement);
-
+    if (dist > 1.122462048)
+    {
+        return {0, 0, 0};
+    }
     const double sigma = (p.getSigma() + q.getSigma()) / 2;
     const double epsilon = std::sqrt(p.getEpsilon() * q.getEpsilon());
 

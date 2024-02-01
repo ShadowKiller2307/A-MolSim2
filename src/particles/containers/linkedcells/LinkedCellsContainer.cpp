@@ -45,7 +45,6 @@ LinkedCellsContainer::LinkedCellsContainer(const std::array<double, 3> &_domain_
 
 void LinkedCellsContainer::addParticle(const Particle &p)
 {
-    std::cout << p.getNeighbours().size() << std::endl;
     Cell *cell = particlePosToCell(p.getX());
 
     if (cell == nullptr)

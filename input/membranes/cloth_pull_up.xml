@@ -41,7 +41,7 @@
             <lower_left_front_corner>
                 <x>15.0</x>
                 <y>15.0</y>
-                <z>1.5</z>
+                <z>10.5</z>
             </lower_left_front_corner>
             <grid_dim>
                 <x>50</x>
@@ -50,7 +50,7 @@
             </grid_dim>
             <grid_spacing>2.2</grid_spacing>
             <temperature>0.1</temperature>
-            <mass>1</mass>
+            <mass>1.0</mass>
             <velocity>
                 <x>0.0</x>
                 <y>0.0</y>
