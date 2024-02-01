@@ -41,7 +41,7 @@ Simulation::Simulation(const std::vector<Particle> &initial_particles, const Sim
         particle_container =
                 std::make_unique<LinkedCellsContainer>(lc_type.domain_size, lc_type.cutoff_radius,
                                                        params.pairwise_forces,
-                                                       lc_type.boundary_conditions, 8);
+                                                       lc_type.boundary_conditions, params.nr_threads);
 
     } else if (std::holds_alternative<SimulationParams::DirectSumType>(params.container_type)) {
         particle_container = std::make_unique<DirectSumContainer>();
@@ -92,9 +92,9 @@ SimulationOverview Simulation::runSimulation() {
     ///////////////////////////////////////// here almost all the computing work is done /////////////////////////////////////////////////////////////////////////////
 #ifdef _OPENMP
     std::cout << "Enabling open mp works" << std::endl;
-    omp_set_num_threads(8);
+    omp_set_num_threads(params.nr_threads);
 #endif
-    strategy = 1;
+    //strategy = 1;
     //  std::cout << "strategy " << strategy << std::endl;
     //strategy = params.strategy;
     while (simulated_time < params.end_time) {

@@ -29,28 +29,44 @@ void ReflectiveBoundaryType::applyBoundaryConditions(LinkedCellsContainer& conta
     if (container.boundary_types[1] == LinkedCellsContainer::BoundaryCondition::REFLECTIVE) {
       //#pragma omp parallel for
         for (Cell* cell : container.right_boundary_cell_references) {
-        /*#ifdef _OPENMP
+       /* #ifdef _OPENMP
            omp_set_lock(cell->getLock());
         #endif*/
             for (Particle* p : cell->getParticleReferences()) {
                 double distance = container.domain_size[0] - p->getX()[0];
                 p->setF(p->getF() + calculateReflectiveBoundaryForce(*p, distance, LinkedCellsContainer::BoundarySide::RIGHT));
             }
-    /*    #ifdef _OPENMP
+     /*   #ifdef _OPENMP
            omp_unset_lock(cell->getLock());
         #endif*/
         }
     }
 
     if (container.boundary_types[2] == LinkedCellsContainer::BoundaryCondition::REFLECTIVE) {
-     //  #pragma omp parallel for
+     // #pragma omp parallel for
         for (Cell* cell : container.bottom_boundary_cell_references) {
-       /* #ifdef _OPENMP
+        /*#ifdef _OPENMP
            omp_set_lock(cell->getLock());
         #endif*/
             for (Particle* p : cell->getParticleReferences()) {
                 double distance = p->getX()[1];
                 p->setF(p->getF() + calculateReflectiveBoundaryForce(*p, distance, LinkedCellsContainer::BoundarySide::BOTTOM));
+            }
+        /*#ifdef _OPENMP
+           omp_unset_lock(cell->getLock());
+        #endif*/
+        }
+    }
+
+    if (container.boundary_types[3] == LinkedCellsContainer::BoundaryCondition::REFLECTIVE) {
+     //  #pragma omp parallel for
+        for (Cell* cell : container.top_boundary_cell_references) {
+      /*  #ifdef _OPENMP
+           omp_set_lock(cell->getLock());
+        #endif*/
+            for (Particle* p : cell->getParticleReferences()) {
+                double distance = container.domain_size[1] - p->getX()[1];
+                p->setF(p->getF() + calculateReflectiveBoundaryForce(*p, distance, LinkedCellsContainer::BoundarySide::TOP));
             }
 //        #ifdef _OPENMP
 //           omp_unset_lock(cell->getLock());
@@ -58,42 +74,26 @@ void ReflectiveBoundaryType::applyBoundaryConditions(LinkedCellsContainer& conta
         }
     }
 
-    if (container.boundary_types[3] == LinkedCellsContainer::BoundaryCondition::REFLECTIVE) {
-     // #pragma omp parallel for
-        for (Cell* cell : container.top_boundary_cell_references) {
-     /*   #ifdef _OPENMP
-           omp_set_lock(cell->getLock());
-        #endif*/
-            for (Particle* p : cell->getParticleReferences()) {
-                double distance = container.domain_size[1] - p->getX()[1];
-                p->setF(p->getF() + calculateReflectiveBoundaryForce(*p, distance, LinkedCellsContainer::BoundarySide::TOP));
-            }
-      /*  #ifdef _OPENMP
-           omp_unset_lock(cell->getLock());
-        #endif*/
-        }
-    }
-
     if (container.boundary_types[4] == LinkedCellsContainer::BoundaryCondition::REFLECTIVE) {
-      // #pragma omp parallel for
-        for (Cell* cell : container.back_boundary_cell_references) {/*
-         #ifdef _OPENMP
+       //#pragma omp parallel for
+        for (Cell* cell : container.back_boundary_cell_references) {
+         /*#ifdef _OPENMP
            omp_set_lock(cell->getLock());
          #endif*/
             for (Particle* p : cell->getParticleReferences()) {
                 double distance = p->getX()[2];
                 p->setF(p->getF() + calculateReflectiveBoundaryForce(*p, distance, LinkedCellsContainer::BoundarySide::BACK));
             }
-         /*#ifdef _OPENMP
+     /*    #ifdef _OPENMP
            omp_unset_lock(cell->getLock());
         #endif*/
         }
     }
 
     if (container.boundary_types[5] == LinkedCellsContainer::BoundaryCondition::REFLECTIVE) {
-     //   #pragma omp parallel for
+    //   #pragma omp parallel for
         for (Cell* cell : container.front_boundary_cell_references) {
-       /*  #ifdef _OPENMP
+        /* #ifdef _OPENMP
            omp_set_lock(cell->getLock());
          #endif*/
          //   std::cout << "num threads boundary: " << omp_get_num_threads() << std::endl;
@@ -101,7 +101,7 @@ void ReflectiveBoundaryType::applyBoundaryConditions(LinkedCellsContainer& conta
                 double distance = container.domain_size[2] - p->getX()[2];
                 p->setF(p->getF() + calculateReflectiveBoundaryForce(*p, distance, LinkedCellsContainer::BoundarySide::FRONT));
             }
-         /*#ifdef _OPENMP
+        /* #ifdef _OPENMP
            omp_unset_lock(cell->getLock());
          #endif*/
         }

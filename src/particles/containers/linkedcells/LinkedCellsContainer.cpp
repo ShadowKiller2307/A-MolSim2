@@ -38,7 +38,14 @@ LinkedCellsContainer::LinkedCellsContainer(const std::array<double, 3> &_domain_
     // add the neighbour references to the cells
     initCellNeighbourReferences();
 
-    initSubdomains(numThreads); // initialize the subdomains for parallelization strategy 2
+    int numThreadsInit;
+    if(numThreads == 8) {
+        numThreadsInit = numThreads*2;
+    }
+    else {
+        numThreadsInit = numThreads;
+    }
+    initSubdomains(numThreadsInit); // initialize the subdomains for parallelization strategy 2
 
     // reserve the memory for the particles to prevent reallocation during insertion
     particles.reserve(_n);
@@ -438,7 +445,7 @@ void LinkedCellsContainer::initSubdomains(int numThreadsInit) {
     //now divide the domain into subdomains depending on the number of threads
     //  std::cout << "numThreads" << numThreadsInit << std::endl;
     std::array<double, 3> subdomainsPerDimension = computeSubdomainsPerDimension(numThreadsInit);
-    std::cout << "Subdomains per dimension: " << subdomainsPerDimension << std::endl;
+    Logger::logger->info("Subdomains per dimension: {} * {} * {}", subdomainsPerDimension[0], subdomainsPerDimension[1], subdomainsPerDimension[2]);
     //TODO: what if the amount of subdomains isn't a multiple of the amount of cells --> smaller subdomains
     //TODO: include the halo cells in the subdomain? --> yes
 
@@ -449,9 +456,9 @@ void LinkedCellsContainer::initSubdomains(int numThreadsInit) {
     auto cellsPerSubdomainZ = std::ceil((domain_num_cells[2] + 2.0) / subdomainsPerDimension[2]);
     auto numSubdomains = subdomainsPerDimension[0] * subdomainsPerDimension[1]
                          * subdomainsPerDimension[2];
-    std::cout << "cellsPerSubdomainX: " << cellsPerSubdomainX << std::endl;
-    std::cout << "cellsPerSubdomainY: " << cellsPerSubdomainY << std::endl;
-    std::cout << "cellsPerSubdomainZ: " << cellsPerSubdomainZ << std::endl;
+    Logger::logger->info("cellsPerSubdomainX: {}", cellsPerSubdomainX);
+    Logger::logger->info("cellsPerSubdomainY: {}", cellsPerSubdomainY);
+    Logger::logger->info("cellsPerSubdomainZ: {}", cellsPerSubdomainZ);
 
 
     // instantiate numSubdomains subdomains
@@ -502,13 +509,18 @@ void LinkedCellsContainer::initSubdomains(int numThreadsInit) {
             }
         }
     }
-    for (int i = 0; i < subdomainsVector.size(); ++i) {
+   /*for (int i = 0; i < subdomainsVector.size(); ++i) {
         std::cout << "Subdomain " << i << "consists of the following cells" << std::endl;
         for (auto &cell: subdomainsVector.at(i)->subdomainCells) {
             std::cout << "Cell ID: " << cell.second->getCellIndex() << std::endl;
         }
-    }
-    std::cout << "There are no duplicate cells " << checkNoDuplicateCellsInDiffSubdomains() << std::endl;
+    }*/
+   if(checkNoDuplicateCellsInDiffSubdomains()) {
+       Logger::logger->info("There are no duplicate cells in the subdomains.");
+   }
+   else {
+        Logger::logger->info("There are duplicate cells in the subdomains!");
+   }
 }
 
 bool printCellNeighboursToComputeForcesWith() {
