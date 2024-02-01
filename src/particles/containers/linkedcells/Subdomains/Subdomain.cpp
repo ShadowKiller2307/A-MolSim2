@@ -8,7 +8,6 @@ Subdomain::Subdomain(double delta_t, double gravityConstant, double cutOffRadius
     subdomainCells = {};
 }
 
-//void Subdomain::initializeSubdomains() {}
 void Subdomain::addCell(bool isAtSubdomainBorder, Cell *cellToAdd) {
     subdomainCells.emplace(isAtSubdomainBorder, cellToAdd);
 }
@@ -22,6 +21,7 @@ void Subdomain::calculateForcesBetweenCells(Cell *one, Cell *two) {
 void Subdomain::updateSubdomain(const std::vector<std::shared_ptr<PairwiseForceSource>> &force_sources) {
     //apply simple forces
    // std::cout << "omp num threads: " << omp_get_num_threads() << std::endl;
+#ifdef _OPENMP
 #pragma omp single
     {
         for (auto &cell: subdomainCells) {
@@ -109,6 +109,7 @@ void Subdomain::updateSubdomain(const std::vector<std::shared_ptr<PairwiseForceS
         }
     }
    // std::cout << "after velocities" << std::endl;
+#endif
 }
 
 void Subdomain::updateParticlePositions() {

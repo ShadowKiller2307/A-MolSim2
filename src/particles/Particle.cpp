@@ -37,7 +37,9 @@ Particle::Particle(std::array<double, 3> x_arg, std::array<double, 3> v_arg, dou
     sigma = sigma_arg;
     type = type_arg;
     old_f = {0., 0., 0.};
+#ifdef _OPENMP
     omp_init_lock(&particleLock);
+#endif
     std::fill(neighbors.begin(), neighbors.end(), nullptr);
     Logger::logger->debug("Particle created");
 }
@@ -53,7 +55,9 @@ Particle::Particle(std::array<double, 3> x_arg, std::array<double, 3> v_arg, std
     type = type_arg;
     epsilon = epsilon_arg;
     sigma = sigma_arg;
+#ifdef _OPENMP
     omp_init_lock(&particleLock); //TODO I think i have to destroy that lock somewhere
+#endif
     std::fill(neighbors.begin(), neighbors.end(), nullptr);
     Logger::logger->debug("Particle created");
 }
@@ -110,9 +114,11 @@ const std::array<double, 3> &Particle::getDisplacementToAdd() const {
     return displacement_to_add;
 }
 
+#ifdef _OPENMP
 omp_lock_t *Particle::getLock() {
     return &particleLock;
 }
+#endif
 
 
 std::ostream &operator<<(std::ostream &stream, Particle &p)

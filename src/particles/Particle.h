@@ -76,7 +76,9 @@ class Particle {
      */
     std::array<Particle*, 8> neighbors;
 
+#ifdef _OPENMP
     omp_lock_t particleLock;
+#endif
 
    public:
     Particle(const Particle& other);
@@ -180,7 +182,9 @@ class Particle {
 
     [[nodiscard]] std::string toString() const;
 
+#ifdef _OPENMP
     omp_lock_t* getLock();
+#endif
 };
 
 std::ostream& operator<<(std::ostream& stream, Particle& p);

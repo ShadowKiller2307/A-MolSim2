@@ -47,12 +47,5 @@ private:
     double delta_t;
     double gravityConstant;
     double cutoffRadius;
-   /* std::set<std::pair<bool, Cell*>> subdomainCells;*/
-  /*  std::array<double, 3> domainSize;
-    std::array<unsigned, 3> cellsPerDimension;
-    double cutoffRadius;
-    unsigned numThreads;*/
-
-  // friend LinkedCellsContainer;
 };
 

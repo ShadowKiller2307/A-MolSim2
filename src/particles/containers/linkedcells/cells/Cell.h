@@ -50,7 +50,9 @@ class Cell {
      * @brief a lock for accessing the cells, needed for the parallelization strategies in order
      * to avoid race conflicts
      */
+#ifdef _OPENMP
      omp_lock_t cellLock;
+#endif
 
      int cellIndex;
 
@@ -133,7 +135,9 @@ class Cell {
 
     std::unordered_set<Cell*> getNeighboursToComputeForcesWith();
 
+#ifdef _OPENMP
     omp_lock_t* getLock();
+#endif
 
     void calculateForcesBetweenCells(Cell* other);
 };

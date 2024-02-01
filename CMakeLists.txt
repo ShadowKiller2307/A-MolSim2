@@ -47,8 +47,6 @@ if(ENABLE_OPENMP)
     endif()
 else ()
     message(STATUS "OpenMP is disabled")
-
-
 endif ()
 
 # project dependencies

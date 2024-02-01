@@ -90,31 +90,31 @@ SimulationOverview Simulation::runSimulation() {
 
     //  particle_container->
     ///////////////////////////////////////// here almost all the computing work is done /////////////////////////////////////////////////////////////////////////////
-    omp_set_num_threads(1);
-    strategy = 0;
- //  std::cout << "strategy " << strategy << std::endl;
+#ifdef _OPENMP
+    std::cout << "Enabling open mp works" << std::endl;
+    omp_set_num_threads(8);
+#endif
+    strategy = 1;
+    //  std::cout << "strategy " << strategy << std::endl;
     //strategy = params.strategy;
     while (simulated_time < params.end_time) {
       /*  std::cout << "Strategy "<< strategy << std::endl;
         std::cout << "numThreads " << numThreads << std::endl;*/
+
+
         if (strategy == 1 || strategy == 2 || strategy == 3 || strategy == 4) {
             particle_container->parallel_step(params.simple_forces, params.pairwise_forces, params.delta_t,
                                               gravityConstant, strategy);
-            //verletFunctor->parallel_step(linkedCellsContainer, params.simple_forces, params.pairwise_forces, params.delta_t, gravityConstant, 1);
-            /*particle_container->parallel_step(params.simple_forces, params.pairwise_forces, params.delta_t,
-                                              gravityConstant, params.strategy);*/
-        } /*else if (strategy == 2) {
-            // verletFunctor->parallel_step(linkedCellsContainer, params.simple_forces, params.pairwise_forces, params.delta_t, gravityConstant, 2);
-            particle_container->parallel_step(params.simple_forces, params.pairwise_forces, params.delta_t,
-                                              gravityConstant, 2);
-        } else if (strategy == 3) {
-            //  verletFunctor->parallel_step(linkedCellsContainer, params.simple_forces, params.pairwise_forces, params.delta_t, gravityConstant, 3);
-            particle_container->parallel_step(params.simple_forces, params.pairwise_forces, params.delta_t,
-                                              gravityConstant, 3);
-        }*/
+
+        }
         else {
             integration_functor->step(particle_container, params.simple_forces, params.pairwise_forces, params.delta_t);
         }
+
+
+
+
+
         ++iteration;
         simulated_time += params.delta_t;
 

@@ -119,6 +119,7 @@ LinkedCellsContainer::applySimpleForces(const std::vector<std::shared_ptr<Simple
 //TODO: there is a deadlock inside this function
 void LinkedCellsContainer::applyPairwiseForcesOptimized(
         const std::vector<std::shared_ptr<PairwiseForceSource>> &force_sources) {
+#ifdef _OPENMP
     //  std::cout << "reach begin of apply pairwise forces optimized" << std::endl;
 /*#pragma omp single
     {*/
@@ -186,6 +187,7 @@ void LinkedCellsContainer::applyPairwiseForcesOptimized(
     }
     deleteHaloParticles();
     updateCellsParticleReferences();
+#endif
 }
 
 
@@ -622,6 +624,9 @@ std::vector<Subdomain *> LinkedCellsContainer::getSubdomainsVector() {
 void LinkedCellsContainer::parallel_step(const std::vector<std::shared_ptr<SimpleForceSource>> &simple_force_sources,
                                          const std::vector<std::shared_ptr<PairwiseForceSource>> &pairwise_force_sources,
                                          double delta_t, double gravityConstant, int strategy) {
+#ifdef _OPENMP
+
+
     if (strategy == 1) { // parallelization strategy 1: subdomains
 #pragma omp parallel for schedule(dynamic)
         for (int i = 0; i < getSubdomainsVector().size(); ++i) {
@@ -950,9 +955,11 @@ void LinkedCellsContainer::parallel_step(const std::vector<std::shared_ptr<Simpl
         }
 
     }
+#endif
 }
 
 void LinkedCellsContainer::processCell(Cell *cell) {
+#ifdef _OPENMP
     omp_set_lock(cell->getLock());
     for (auto it1 = cell->getParticleReferences().begin();
          it1 != cell->getParticleReferences().end(); ++it1) {
@@ -1010,6 +1017,7 @@ void LinkedCellsContainer::processCell(Cell *cell) {
             omp_unset_lock(cell->getLock());
         }
     }
+#endif
 }
 
 void LinkedCellsContainer::setPairwise(std::vector<std::shared_ptr<PairwiseForceSource>> pairwiseForceSources) {

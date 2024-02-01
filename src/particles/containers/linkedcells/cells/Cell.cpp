@@ -3,7 +3,9 @@
 Cell::Cell(CellType cell_type, int index) : cell_type(cell_type), cellIndex(index), neighboursToComputeForcesWith(){
     neighbour_references.reserve(26);
     already_influenced_by.reserve(16);
+#ifdef _OPENMP
     omp_init_lock(&cellLock);
+#endif
 }
 
 Cell::CellType Cell::getCellType() const { return cell_type; }
@@ -33,12 +35,16 @@ std::unordered_set<Cell*> Cell::getNeighboursToComputeForcesWith() {
 }
 
 Cell::~Cell() {
+#ifdef _OPENMP
     omp_destroy_lock(&cellLock);
+#endif
 }
 
+#ifdef _OPENMP
 omp_lock_t* Cell::getLock() {
     return &cellLock;
 }
+#endif
 
 void Cell::calculateForcesBetweenCells(Cell *other) {
 
