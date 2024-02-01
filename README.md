@@ -1,39 +1,28 @@
 # Molecular Dynamics Simulation
 
-[![CodeQL](https://github.com/ManuelLerchner/MolSim-WS23-24/actions/workflows/codeql.yml/badge.svg)](https://github.com/ManuelLerchner/MolSim-WS23-24/actions/workflows/codeql.yml)
-[![Tests](https://github.com/ManuelLerchner/MolSim-WS23-24/actions/workflows/tests.yml/badge.svg)](https://github.com/ManuelLerchner/MolSim-WS23-24/actions/workflows/tests.yml)
-[![Pages](https://github.com/ManuelLerchner/MolSim-WS23-24/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/ManuelLerchner/MolSim-WS23-24/actions/workflows/deploy-pages.yml)
-
-This repo contains the code for the practical course **PSE: Molecular Dynamics** by group C in WS 2023/24.
+This repo contains the code for the practical course **PSE: Molecular Dynamics** by group C in WS 2023/24 modified by group A for worksheet 5.
 
 ## Group Members and Supervisors
 
 **Group Members:**
 
-- Manuel Lerchner
-- Tobias Eppacher
-- Daniel Safyan
+- Alexander Wachenfeld
+- Erick Lazar
+- Felix Huber
 
 **All Contributors:**
 
 <!-- markdownlint-disable MD033 -->
-<a href="https://github.com/ManuelLerchner/MolSim-WS23-24/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=ManuelLerchner/MolSim-WS23-24" />
+<a href="https://github.com/TheWhale2307/A-MolSim2/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=TheWhale2307/A-MolSim2" />
 </a>
-
-## Submissions and Presentations
-
-All the submissions for the individual sheets, the presentation slides and the project documentation is automatically deployed to [GitHub Pages](https://manuellerchner.github.io/MolSim-WS23-24) and can be accessed via the following links:
-
-- The doxygen documentation of the `master` branch can be found in [docs](https://manuellerchner.github.io/MolSim-WS23-24/docs/).
-- The submission files of the `presentations` branch can be found in [submissions](https://manuellerchner.github.io/MolSim-WS23-24/submissions/).
 
 ## Tools
 
 ### Build tools and versions
 
 - Tested with `gcc 13.1.0`
-- Tested with `CMake 3.28.0`
+- Tested with `CMake 3.28.1`
 - Tested with `make 4.3`
 
 ### Dependencies
@@ -60,7 +49,7 @@ In this section we describe how to build the project. You can use the following 
    - Compile the tests: `make -j tests`
    - Compile benchmarks: `make -j benchmarks`
 
->*Hint: The `-j<int>` option enables parallel compilation on the given amount of cores, e.g. `-j4` for 4 cores, if no number is given the maximum amount of cores is used*
+> _Hint: The `-j<int>` option enables parallel compilation on the given amount of cores, e.g. `-j4` for 4 cores, if no number is given the maximum amount of cores is used_
 
 ### Build the documentation
 
@@ -71,8 +60,6 @@ In this section we describe how to build the project. You can use the following 
 - Run `make doc_doxygen` to build the documentation.
 
 - The output can be found in `build/docs/html/index.html`.
-
-- The documentation of the `master` branch can be found [here](https://manuellerchner.github.io/MolSim-WS23-24/docs/).
 
 ## Run
 
@@ -85,9 +72,9 @@ In this section we describe how to build the project. You can use the following 
   - Excecute `./MolSim --help` to get a detailed list of all options, parameters and their default values.
 
   - An example run could look like this: `./MolSim ../../body_collision.cub -d 0.0002 -e 5`
-  
+
   - Further information about the possible input file formats can be found in the `/docs` directory.
-  
+
     - **Note:** Input files can, and for some cases have to provide own simulation parameters. In case the user provides additional parameters via the command line, both sources of parameters are merged. If a conflict occurs, the command line parameters take precedence, since it was explicitly requested by the user. To avoid mixups, it is recommended to define all parameters in the input file and only use command line for small, temporary adjustments to avoid changing the input file.
 
 ### Run the tests
