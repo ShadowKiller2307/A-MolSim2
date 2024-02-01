@@ -4,7 +4,7 @@
                xsi:noNamespaceSchemaLocation="../simulation_schema.xsd">
 
     <settings>
-        <delta_t>0.0001</delta_t>
+        <delta_t>0.001</delta_t>
         <end_time>250</end_time>
         <third_dimension>true</third_dimension>
         <particle_container>
@@ -14,7 +14,7 @@
                     <y>9.2</y>
                     <z>9.2</z>
                 </domain_size>
-                <cutoff_radius>2.36</cutoff_radius>
+                <cutoff_radius>2.3</cutoff_radius>
                 <boundary_conditions>
                     <left>Periodic</left>
                     <right>Periodic</right>

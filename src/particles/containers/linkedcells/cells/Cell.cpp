@@ -1,6 +1,6 @@
 #include "Cell.h"
 
-Cell::Cell(CellType cell_type, int index) : cell_type(cell_type), cellIndex(index){
+Cell::Cell(CellType cell_type, int index) : cell_type(cell_type), cellIndex(index), neighboursToComputeForcesWith(){
     neighbour_references.reserve(26);
     already_influenced_by.reserve(16);
     omp_init_lock(&cellLock);

@@ -18,6 +18,12 @@ class LinkedCellsContainer : public ParticleContainer {
    // using Subdomain = std::unordered_set<Cell*>;
    public:
 
+    /**
+    * @brief computes the number of subdomains given a number of threads
+    */
+    std::array<double, 3> computeSubdomainsPerDimension(int numThreads);
+
+
     bool printCellNeighboursToComputeForcesWith();
 
     bool checkNoDuplicateCellsInDiffSubdomains();
@@ -374,6 +380,8 @@ class LinkedCellsContainer : public ParticleContainer {
      */
     std::unordered_set<Cell*> occupied_cells_references;
 
+    std::map<int, Cell*> occupied_cells_map;
+
     // Boundary cell references with respect to x-axis pointing to the right, y-axis pointing up and z axis pointing out of the screen
 
     /**
@@ -446,9 +454,10 @@ class LinkedCellsContainer : public ParticleContainer {
     std::vector<Subdomain*> subdomainsVector;
 
     /**
-     * @brief computes the number of subdomains given a number of threads
+     * @brief Method needed for
+     * @param cell
      */
-    std::array<double, 3> computeSubdomainsPerDimension(int numThreads);
+    void processCell(Cell* cell);
 
     double delta_t;
 

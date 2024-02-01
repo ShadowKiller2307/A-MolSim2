@@ -123,6 +123,7 @@ std::tuple<std::vector<Particle>, SimulationParams> prepareParticles(std::filesy
 
     auto forces = XSDToInternalTypeAdapter::convertToForces(settings.forces());
 
+    // default values
     int strategy = 0;
     int nr_threads = 8;
 

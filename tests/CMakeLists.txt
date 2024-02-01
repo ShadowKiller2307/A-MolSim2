@@ -8,7 +8,8 @@ file(GLOB_RECURSE TEST_SRC
 
 enable_testing()
 
-add_executable(tests ${TEST_SRC})
+add_executable(tests ${TEST_SRC}
+        simulation/linkedcells/TestSubdomains.cpp)
 
 target_link_libraries(
         tests

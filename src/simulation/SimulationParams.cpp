@@ -125,6 +125,8 @@ void SimulationParams::logSummary(int depth) const {
     Logger::logger->info("{}║  Output directory path: {}", indent, output_dir_path.string());
     Logger::logger->info("{}║  Delta_t: {}", indent, delta_t);
     Logger::logger->info("{}║  End_time: {}", indent, end_time);
+    Logger::logger->info("{}║  Number of threads: {}", indent, nr_threads);
+    Logger::logger->info("{}║  Parallelization strategy: {}", indent, strategy);
     Logger::logger->info("{}║  Reuse cached data: {}", indent, !fresh);
 
     // Print Physical setup
