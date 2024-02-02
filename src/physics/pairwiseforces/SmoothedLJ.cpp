@@ -10,11 +10,11 @@ std::array<double, 3UL> SmoothedLJ::calculateForce(Particle &p, Particle &q) con
 
     const auto displacement = q.getX() - p.getX();
     const double distancePQ = ArrayUtils::L2Norm(displacement);
-    // TODO: maybe apply the mixing rule only if sigma and epsilon are different?
+
     const double sigma = (p.getSigma() + q.getSigma()) / 2;
     const double epsilon = std::sqrt(p.getEpsilon() * q.getEpsilon());
     // case d_ij <= r_l
-    // TODO: maybe some parts of the calculation can be optimized(for example that every same calculation is only executed once)
+
     if (distancePQ <= r_l)
     {
         // old lennard jones force calculation
