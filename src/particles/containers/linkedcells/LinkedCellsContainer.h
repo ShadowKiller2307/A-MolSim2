@@ -76,13 +76,16 @@ class LinkedCellsContainer : public ParticleContainer {
 
     int findCellForParticle(const std::array<double, 3>& pos);
 
+    /**
+     * @brief performs a step in the parallel simulations, can choose between 4 strategies
+     */
     void parallel_step(
             const std::vector<std::shared_ptr<SimpleForceSource>> &simple_force_sources,
             const std::vector<std::shared_ptr<PairwiseForceSource>> &pairwise_force_sources, double delta_t,
             double gravityConstant, int strategy) override;
 
     /**
-     * @brief initialize the subdomains if parallelization strategy 1 is chosen
+     * @brief initialize the subdomains for the subdomains parallelization strategy
      */
     void initSubdomains(int numThreads);
 
@@ -278,6 +281,9 @@ class LinkedCellsContainer : public ParticleContainer {
     */
     void updateCellsParticleReferences();
 
+    /**
+     * @brief parallelized variant for the particles parallelization
+     */
     void updateCellsParticleReferencesOptimized();
 
     /**
@@ -286,13 +292,11 @@ class LinkedCellsContainer : public ParticleContainer {
      */
     void deleteHaloParticles();
 
+    /**
+     * @brief get the subdomains vector
+     */
     std::vector<Subdomain*> getSubdomainsVector();
 
-   /* *//**
-    * @brief initialize the subdomains if parallelization strategy 1 is chosen
-    *//*
-    void initSubdomains();
-*/
 
    private:
     /**
@@ -451,6 +455,9 @@ class LinkedCellsContainer : public ParticleContainer {
     */
     std::map<std::array<unsigned int, 3>, Subdomain*> subdomains;
 
+    /**
+     * @brief a vector which contains the subdomains
+     */
     std::vector<Subdomain*> subdomainsVector;
 
     /**
@@ -465,5 +472,5 @@ class LinkedCellsContainer : public ParticleContainer {
 
     int numThreads;
 
-    const std::vector<std::shared_ptr<PairwiseForceSource>> &pairwise_force_sources; //= std::make_shared<>();
+    const std::vector<std::shared_ptr<PairwiseForceSource>> &pairwise_force_sources;
 };

@@ -14,17 +14,28 @@
 class Subdomain{
 public:
 
+    /**
+     * @brief: the pair consists of:
+     * bool: is the cell located at the subdomain border
+     * Cell*: pointer to the cell belonging to the subdomain
+     */
     std::set<std::pair<bool, Cell*>> subdomainCells;
 
-    Subdomain(double delta_t, double gravityConstant, double cutoffRadius);
     /**
-     * @brief: based on the number of threads subdomains are intialized which consist of multiple cells
+     * @brief initialize a subdomain
+     * based on the number of threads subdomains are intialized which consist of multiple cells
      */
-  //  void initializeSubdomains();
-  void addCell(bool isAtSubdomainBorder, Cell* cellToAdd);
+    Subdomain(double delta_t, double gravityConstant, double cutoffRadius);
+
+    /**
+     * @brief add a cell to the subdomain
+     */
+   void addCell(bool isAtSubdomainBorder, Cell* cellToAdd);
 
   /**
    * @brief updates the particle positions within the current domain
+   * not used anymore as there were problems calling it in a pragma omp parallel section(now subdomains are
+   * processed in parallel_step)
    */
   void updateParticlePositions();
   /**
@@ -32,17 +43,13 @@ public:
    * -> apply simple forces
    * -> apply pairwise forces
    * -> update the velocity
+   * also not used anymore
    */
   void updateSubdomain(const std::vector<std::shared_ptr<PairwiseForceSource>>& force_sources);
 
   void calculateForcesBetweenCells(Cell* one, Cell* two);
 
 private:
-    /**
-     * @brief: the pair consists of:
-     * bool: is the cell located at the subdomain border
-     * Cell*: pointer to the cell belonging to the subdomain
-     */
   //  std::set<std::pair<bool, Cell*>> subdomainCells; // a set of the subdomains
     double delta_t;
     double gravityConstant;

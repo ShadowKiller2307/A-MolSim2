@@ -54,6 +54,9 @@ class Cell {
      omp_lock_t cellLock;
 #endif
 
+     /**
+      * @brief a index for the cell
+      */
      int cellIndex;
 
    public:
@@ -133,6 +136,9 @@ class Cell {
 
     void addToNeighboursToComputeForcesWith(Cell* cell);
 
+    /**
+     * @brief the neighbours which remain for the current cell to compute the forces with
+     */
     std::unordered_set<Cell*> getNeighboursToComputeForcesWith();
 
 #ifdef _OPENMP

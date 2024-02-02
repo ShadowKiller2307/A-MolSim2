@@ -127,9 +127,6 @@ LinkedCellsContainer::applySimpleForces(const std::vector<std::shared_ptr<Simple
 void LinkedCellsContainer::applyPairwiseForcesOptimized(
         const std::vector<std::shared_ptr<PairwiseForceSource>> &force_sources) {
 #ifdef _OPENMP
-    //  std::cout << "reach begin of apply pairwise forces optimized" << std::endl;
-/*#pragma omp single
-    {*/
     ReflectiveBoundaryType::applyBoundaryConditions(*this);
     OutflowBoundaryType::applyBoundaryConditions(*this);
     PeriodicBoundaryType::applyBoundaryConditions(*this);
@@ -140,7 +137,7 @@ void LinkedCellsContainer::applyPairwiseForcesOptimized(
 
     for (Cell *cell: occupied_cells_references) {
         // skip halo cells
-        if (cell->getCellType() == Cell::CellType::HALO) continue;
+        //if (cell->getCellType() == Cell::CellType::HALO) continue;
         size_t amountOfParticles = cell->getParticleReferences().size();
 #pragma omp parallel
         {
@@ -637,8 +634,6 @@ void LinkedCellsContainer::parallel_step(const std::vector<std::shared_ptr<Simpl
                                          const std::vector<std::shared_ptr<PairwiseForceSource>> &pairwise_force_sources,
                                          double delta_t, double gravityConstant, int strategy) {
 #ifdef _OPENMP
-
-
     if (strategy == 1) { // parallelization strategy 1: subdomains
 #pragma omp parallel for schedule(dynamic)
         for (int i = 0; i < getSubdomainsVector().size(); ++i) {
@@ -675,23 +670,8 @@ void LinkedCellsContainer::parallel_step(const std::vector<std::shared_ptr<Simpl
         OutflowBoundaryType::applyBoundaryConditions(*this);
         PeriodicBoundaryType::applyBoundaryConditions(*this);
 
-#pragma omp parallel for schedule(dynamic) //num_threads(8)
+#pragma omp parallel for schedule(dynamic)
         for (auto *subdomain: subdomainsVector) {
-            // std::cout << "num threads parallel_step: " << omp_get_num_threads() << std::endl;
-            /*for (auto &cell: subdomain->subdomainCells) {
-                if (cell.first) {
-                    omp_set_lock(cell.second->getLock());
-                }
-                for (auto *particle: cell.second->getParticleReferences()) { //directly apply gravitational
-                    //force here for performance
-                    auto currentF = particle->getF();
-                    currentF[1] += particle->getM() * (-gravityConstant);
-                    particle->setF(currentF);
-                }
-                if (cell.first) {
-                    omp_unset_lock(cell.second->getLock());
-                }
-            }*/
             // apply pairwise forces
             //TODO: maybe domain occupied_cell_references
             for (auto &cell: subdomain->subdomainCells) {
@@ -700,7 +680,6 @@ void LinkedCellsContainer::parallel_step(const std::vector<std::shared_ptr<Simpl
                 where race conflicts can occur(because every domain has at most one thread, so only one thread will
                 work on the inner subdomain cells)
                 whether the cell is at the subdomain border can be deduced from cell.first*/
-                //
 
                 //if (cell.first) {
                 omp_set_lock(cell.second->getLock());
@@ -759,10 +738,6 @@ void LinkedCellsContainer::parallel_step(const std::vector<std::shared_ptr<Simpl
                         omp_unset_lock(neighbour->getLock());
                         omp_unset_lock(cell.second->getLock());
                     }
-                    // free the lock for the neighbour
-                    // if (cell.first) {
-                    /*   omp_unset_lock(cell.second->getLock());
-                       omp_unset_lock(neighbour->getLock());*/
                 }
             }
         }
@@ -789,7 +764,6 @@ void LinkedCellsContainer::parallel_step(const std::vector<std::shared_ptr<Simpl
         /// update the positions
 #pragma omp parallel for schedule(dynamic)
         for (auto &p: *this) {
-            // std::cout << omp_get_num_threads() << std::endl; // at the moment only one thread
             // update position
             const std::array<double, 3> new_x =
                     p.getX() + delta_t * p.getV() + (delta_t * delta_t / (2 * p.getM())) * p.getF();
@@ -799,7 +773,6 @@ void LinkedCellsContainer::parallel_step(const std::vector<std::shared_ptr<Simpl
             p.setOldF(p.getF());
             p.setF({0, 0, 0});
         }
-        //     std::cout << "after position calculation" << std::endl;
 
 #pragma omp single
         {
